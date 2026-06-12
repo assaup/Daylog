@@ -1,0 +1,84 @@
+@use '../../styles/variables' as v;
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: v.$space-md;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 700;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.logout {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+}
+
+.main {
+  flex: 1;
+  padding: v.$space-md;
+  padding-bottom: 96px; // room for the fixed tabbar
+}
+
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.tabActive {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.tabIcon {
+  font-size: 20px;
+}
+
+.tabLabel {
+  font-size: 11px;
+}

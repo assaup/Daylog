@@ -1,0 +1,114 @@
+@use '../../styles/variables' as v;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+}
+
+.dateBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: v.$space-sm;
+
+  button {
+    width: 40px;
+    height: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+    font-size: 18px;
+  }
+
+  input {
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+  }
+}
+
+.summary {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+  padding: v.$space-md;
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-sm;
+  flex-wrap: wrap;
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-xs;
+
+  strong {
+    font-size: 26px;
+  }
+}
+
+.totalLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chart {
+  min-height: 220px;
+}
+
+.chartSection {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+  padding: v.$space-md;
+}
+
+.chartTitle {
+  margin: 0;
+  font-size: 16px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: v.$space-md;
+}
+
+.addBtn {
+  flex: 1;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+}
+
+.status {
+  flex: 1;
+  text-align: right;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.statusError {
+  color: var(--danger);
+}

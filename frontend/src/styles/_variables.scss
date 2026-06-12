@@ -1,0 +1,24 @@
+// Spacing / radius / breakpoints used across modules via @use.
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 18px;
+
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+
+$bp-tablet: 768px;
+$bp-desktop: 1024px;
+
+@mixin tablet {
+  @media (min-width: $bp-tablet) {
+    @content;
+  }
+}
+
+@mixin card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-md;
+}

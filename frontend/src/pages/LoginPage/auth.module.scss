@@ -1,0 +1,71 @@
+@use '../../styles/variables' as v;
+
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: v.$space-md;
+}
+
+.card {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+  width: 100%;
+  max-width: 380px;
+  padding: v.$space-lg;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-xs;
+  font-size: 14px;
+  color: var(--text-muted);
+
+  input {
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+  }
+}
+
+.submit {
+  padding: 12px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: v.$radius-sm;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.error {
+  margin: 0;
+  padding: 10px;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border: 1px solid var(--danger);
+  border-radius: v.$radius-sm;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-muted);
+}

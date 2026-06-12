@@ -1,0 +1,228 @@
+@use '../../styles/variables' as v;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.tabs {
+  display: flex;
+  gap: v.$space-sm;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+}
+
+.tabActive {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-sm;
+
+  button {
+    width: 40px;
+    height: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+    font-size: 18px;
+
+    &:disabled {
+      opacity: 0.4;
+    }
+  }
+}
+
+.navLabel {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: v.$space-sm;
+
+  @include v.tablet {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpi {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-xs;
+  padding: v.$space-md;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.kpiBig {
+  font-size: 26px;
+  color: var(--primary);
+}
+
+.kpiHint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.card {
+  @include v.card;
+
+  padding: v.$space-md;
+}
+
+.h2 {
+  margin: 0 0 v.$space-sm;
+  font-size: 16px;
+}
+
+.goalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-sm;
+  margin-bottom: v.$space-sm;
+  flex-wrap: wrap;
+
+  .h2 {
+    margin: 0;
+  }
+}
+
+.goalInput {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+
+  input {
+    width: 64px;
+    padding: 8px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+  }
+}
+
+.goalCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: v.$space-sm;
+}
+
+.focusSelect {
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  max-width: 60%;
+}
+
+.twoCol {
+  display: grid;
+  gap: v.$space-md;
+
+  @include v.tablet {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.kindList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.kindRow {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+}
+
+.kindDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.kindValue {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.top {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+
+  @include v.tablet {
+    grid-template-columns: 160px 1fr 120px;
+    align-items: center;
+    gap: v.$space-sm;
+  }
+}
+
+.topName {
+  font-size: 14px;
+}
+
+.topBar {
+  height: 10px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.topBarFill {
+  height: 100%;
+}
+
+.topValue {
+  font-size: 13px;
+  color: var(--text-muted);
+
+  @include v.tablet {
+    text-align: right;
+  }
+}

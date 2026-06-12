@@ -1,0 +1,102 @@
+@use '../../styles/variables' as v;
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-md;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: v.$radius-md;
+}
+
+.rowError {
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface));
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-sm;
+}
+
+.times {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+
+  input {
+    padding: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.dash {
+  color: var(--text-muted);
+}
+
+.category,
+.note {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+}
+
+.remove {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+}
+
+.errorText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+// On wider screens lay the controls out in a single row.
+@include v.tablet {
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr 1.4fr;
+    grid-template-areas: 'top category note';
+    align-items: center;
+    gap: v.$space-md;
+  }
+
+  .top {
+    grid-area: top;
+    justify-content: flex-start;
+  }
+
+  .category {
+    grid-area: category;
+    width: auto;
+  }
+
+  .note {
+    grid-area: note;
+  }
+
+  .errorText {
+    grid-column: 1 / -1;
+  }
+}

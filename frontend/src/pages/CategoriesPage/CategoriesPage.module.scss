@@ -1,0 +1,138 @@
+@use '../../styles/variables' as v;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+}
+
+.form {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-md;
+}
+
+.h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.formRow {
+  display: flex;
+  gap: v.$space-sm;
+}
+
+.icon {
+  width: 48px;
+  text-align: center;
+}
+
+.name {
+  flex: 1;
+}
+
+.icon,
+.name,
+.kind {
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+}
+
+.color {
+  width: 48px;
+  height: 42px;
+  padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+}
+
+.kind {
+  flex: 1;
+}
+
+.add {
+  padding: 10px 16px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: v.$radius-sm;
+  font-weight: 600;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.item {
+  @include v.card;
+
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  padding: 10px v.$space-md;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.itemIcon {
+  font-size: 18px;
+}
+
+.itemName {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemKind {
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.badge {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.del {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
