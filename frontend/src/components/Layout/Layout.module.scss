@@ -40,6 +40,16 @@
   color: var(--text);
 }
 
+.theme {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  font-size: 16px;
+  line-height: 1;
+}
+
 .main {
   flex: 1;
   padding: v.$space-md;

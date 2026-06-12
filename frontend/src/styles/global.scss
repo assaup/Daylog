@@ -1,4 +1,6 @@
-:root {
+// Light theme (default).
+:root,
+:root[data-theme='light'] {
   --bg: #f1f5f9;
   --surface: #ffffff;
   --surface-2: #f8fafc;
@@ -8,21 +10,25 @@
   --primary: #4f8cff;
   --primary-contrast: #ffffff;
   --danger: #ef4444;
+  --productive: #16a34a;
+  --neutral: #94a3b8;
+  --waste: #ef4444;
+}
+
+// Dark theme.
+:root[data-theme='dark'] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #172033;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --primary: #4f8cff;
+  --primary-contrast: #ffffff;
+  --danger: #f87171;
   --productive: #3ddc97;
   --neutral: #94a3b8;
   --waste: #ff4d6d;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface-2: #172033;
-    --border: #334155;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --primary: #4f8cff;
-  }
 }
 
 * {
@@ -82,4 +88,31 @@ a {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+// Recharts tooltip — default styling is a hardcoded white box with grey text,
+// unreadable in dark theme. Make it theme-aware via CSS variables.
+.recharts-default-tooltip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 20%);
+}
+
+.recharts-default-tooltip .recharts-tooltip-label {
+  margin-bottom: 4px !important;
+  color: var(--text) !important;
+  font-weight: 600;
+}
+
+.recharts-default-tooltip .recharts-tooltip-item,
+.recharts-default-tooltip .recharts-tooltip-item-name,
+.recharts-default-tooltip .recharts-tooltip-item-value,
+.recharts-default-tooltip .recharts-tooltip-item-separator {
+  color: var(--text) !important;
+}
+
+.recharts-tooltip-cursor {
+  fill: color-mix(in srgb, var(--text) 8%, transparent) !important;
 }

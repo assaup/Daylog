@@ -4,6 +4,7 @@ import {
   endOfMonth,
   endOfWeek,
   format,
+  parseISO,
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
@@ -25,6 +26,7 @@ import {
 
 import { useCategories, useStats } from '@/api/hooks';
 import { CategoryDonut, type DonutDatum } from '@/components/charts/CategoryDonut';
+import { GoalCalendar } from '@/components/GoalCalendar/GoalCalendar';
 import { formatMinutes } from '@/utils/time';
 
 import styles from './StatsPage.module.scss';
@@ -52,6 +54,55 @@ function rangeLabel(period: Period, from: Date, to: Date): string {
     return `${format(from, 'd MMM', { locale: ru })} – ${format(to, 'd MMM', { locale: ru })}`;
   }
   return format(from, 'LLLL yyyy', { locale: ru });
+}
+
+const fullDate = (d: string) => format(parseISO(d), 'd MMMM yyyy', { locale: ru });
+
+interface TooltipItem {
+  name: string;
+  value: number;
+  color?: string;
+}
+
+/** Table-style tooltip for the stacked "structure of days" chart. */
+function DayTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipItem[];
+  label?: string;
+}) {
+  if (!active || !payload?.length || !label) return null;
+  const items = payload.filter((p) => p.value > 0).sort((a, b) => b.value - a.value);
+  if (items.length === 0) return null;
+  const total = items.reduce((s, p) => s + p.value, 0);
+
+  return (
+    <div className={styles.tip}>
+      <div className={styles.tipTitle}>{fullDate(label)}</div>
+      <table className={styles.tipTable}>
+        <tbody>
+          {items.map((p) => (
+            <tr key={p.name}>
+              <td>
+                <span className={styles.tipDot} style={{ background: p.color }} />
+                {p.name}
+              </td>
+              <td className={styles.tipValue}>{formatMinutes(p.value)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Всего</td>
+            <td className={styles.tipValue}>{formatMinutes(total)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
 }
 
 const KIND_LABELS: Record<string, string> = {
@@ -96,7 +147,7 @@ export function StatsPage() {
   const focusData = useMemo(() => {
     if (!focusCat || !data) return [];
     return data.by_day.map((d) => ({
-      date: String(d.date).slice(5),
+      date: String(d.date),
       minutes: Number(d[focusCat] ?? 0),
     }));
   }, [focusCat, data]);
@@ -140,11 +191,16 @@ export function StatsPage() {
   const avgProductivePerDay = totals.filled_days
     ? Math.round(totals.productive / totals.filled_days)
     : 0;
-  const productiveToWaste = totals.waste
-    ? `${(totals.productive / totals.waste).toFixed(1)}×`
-    : totals.productive
-      ? '∞'
-      : '—';
+  const avgWastePerDay = totals.filled_days ? Math.round(totals.waste / totals.filled_days) : 0;
+
+  // Productive minutes per hour-of-day, averaged over the tracked days.
+  const prodHoursAvg = data.prod_hours.map((h) => ({
+    hour: h.hour,
+    minutes: totals.filled_days ? Math.round(h.minutes / totals.filled_days) : 0,
+  }));
+
+  // Day number without month for chart X axes, e.g. "2026-05-03" -> "3".
+  const dayTick = (d: string) => String(Number(d.slice(8)));
 
   return (
     <div className={styles.page}>
@@ -182,46 +238,50 @@ export function StatsPage() {
         </button>
       </div>
 
-      <section className={styles.kpis} aria-label="Ключевые показатели">
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>✅ Полезное</span>
-          <strong className={styles.kpiBig} style={{ color: 'var(--productive)' }}>
-            {formatMinutes(totals.productive)}
-          </strong>
-          <span className={styles.kpiHint}>{productiveShare}% от отмеченного</span>
-        </article>
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>🗑 Пожиратели</span>
-          <strong style={{ color: 'var(--waste)' }}>{formatMinutes(totals.waste)}</strong>
-          <span className={styles.kpiHint}>{wasteShare}% от отмеченного</span>
-        </article>
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>Полезное в день</span>
-          <strong>{formatMinutes(avgProductivePerDay)}</strong>
-          <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
-        </article>
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>Полезное / впустую</span>
-          <strong>{productiveToWaste}</strong>
-          <span className={styles.kpiHint}>часов полезного на 1 ч впустую</span>
-        </article>
+      <section className={styles.group} aria-label="Полезное время">
+        <h2 className={styles.groupTitle}>Полезное время</h2>
+        <div className={styles.kpis}>
+          <article className={`${styles.kpi} ${styles.kpiGood}`}>
+            <span className={styles.kpiLabel}>✅ Полезное</span>
+            <strong className={styles.kpiBig}>{formatMinutes(totals.productive)}</strong>
+            <span className={styles.kpiHint}>{productiveShare}% от отмеченного</span>
+          </article>
+          <article className={`${styles.kpi} ${styles.kpiBad}`}>
+            <span className={styles.kpiLabel}>🗑 Пожиратели</span>
+            <strong className={styles.kpiBig}>{formatMinutes(totals.waste)}</strong>
+            <span className={styles.kpiHint}>{wasteShare}% от отмеченного</span>
+          </article>
+          <article className={styles.kpi}>
+            <span className={styles.kpiLabel}>Полезное в день</span>
+            <strong>{formatMinutes(avgProductivePerDay)}</strong>
+            <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
+          </article>
+          <article className={styles.kpi}>
+            <span className={styles.kpiLabel}>Впустую в день</span>
+            <strong>{formatMinutes(avgWastePerDay)}</strong>
+            <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
+          </article>
+        </div>
       </section>
 
-      <section className={styles.kpis} aria-label="Режим сна">
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>🌅 Средний подъём</span>
-          <strong>{totals.avg_wake_time ?? '—'}</strong>
-        </article>
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>🌙 Средний отбой</span>
-          <strong>{totals.avg_sleep_time ?? '—'}</strong>
-        </article>
-        <article className={styles.kpi}>
-          <span className={styles.kpiLabel}>💤 Сна в среднем</span>
-          <strong>
-            {totals.avg_sleep_minutes != null ? formatMinutes(totals.avg_sleep_minutes) : '—'}
-          </strong>
-        </article>
+      <section className={styles.group} aria-label="Режим сна">
+        <h2 className={styles.groupTitle}>Режим и сон</h2>
+        <div className={styles.kpis}>
+          <article className={styles.kpi}>
+            <span className={styles.kpiLabel}>🌅 Средний подъём</span>
+            <strong>{totals.avg_wake_time ?? '—'}</strong>
+          </article>
+          <article className={styles.kpi}>
+            <span className={styles.kpiLabel}>🌙 Средний отбой</span>
+            <strong>{totals.avg_sleep_time ?? '—'}</strong>
+          </article>
+          <article className={styles.kpi}>
+            <span className={styles.kpiLabel}>💤 Сна в среднем</span>
+            <strong>
+              {totals.avg_sleep_minutes != null ? formatMinutes(totals.avg_sleep_minutes) : '—'}
+            </strong>
+          </article>
+        </div>
       </section>
 
       <section className={styles.card}>
@@ -240,7 +300,7 @@ export function StatsPage() {
             <span>ч/день</span>
           </label>
         </div>
-        {goalHours > 0 ? (
+        {goalHours > 0 && (
           <div className={styles.goalCards}>
             <div className={styles.kpi}>
               <span className={styles.kpiLabel}>Цель достигнута</span>
@@ -253,19 +313,31 @@ export function StatsPage() {
               <strong>{totals.current_streak} дн.</strong>
             </div>
           </div>
-        ) : (
-          <p className={styles.muted}>Укажи цель, чтобы видеть прогресс и серию дней подряд.</p>
         )}
+
+        <GoalCalendar
+          period={period}
+          from={fromDate}
+          to={toDate}
+          days={data.trend}
+          goal={Math.round(goalHours * 60)}
+        />
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.h2}>📈 Тренд продуктивности</h2>
+        <h2 className={styles.h2}>📈 Тренд продуктивности · {rangeLabel(period, fromDate, toDate)}</h2>
+        <p className={styles.caption}>
+          По дням за период. % = доля полезного времени от всего отмеченного за день.
+        </p>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={data.trend}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)} fontSize={11} />
+            <XAxis dataKey="date" tickFormatter={dayTick} fontSize={11} minTickGap={8} />
             <YAxis domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} fontSize={11} />
-            <Tooltip formatter={(v: number) => `${v}%`} />
+            <Tooltip
+              labelFormatter={(d: string) => fullDate(d)}
+              formatter={(v: number) => [`${v}%`, 'Продуктивность']}
+            />
             <Line
               type="monotone"
               dataKey="index"
@@ -279,8 +351,11 @@ export function StatsPage() {
 
       <section className={styles.card}>
         <h2 className={styles.h2}>⏰ Продуктивные часы дня</h2>
+        <p className={styles.caption}>
+          В среднем за день: сколько минут ты продуктивен в каждый час суток (0–23).
+        </p>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={data.prod_hours}>
+          <BarChart data={prodHoursAvg}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis
               dataKey="hour"
@@ -288,10 +363,15 @@ export function StatsPage() {
               interval={1}
               fontSize={10}
             />
-            <YAxis tickFormatter={(m: number) => `${Math.round(m / 60)}ч`} fontSize={11} />
+            <YAxis
+              domain={[0, 60]}
+              tickFormatter={(m: number) => `${m}м`}
+              fontSize={11}
+              width={32}
+            />
             <Tooltip
               labelFormatter={(h: number) => `${h}:00–${h + 1}:00`}
-              formatter={(v: number) => formatMinutes(v)}
+              formatter={(v: number) => [`${v} мин в среднем`, 'Полезное']}
             />
             <Bar dataKey="minutes" fill="var(--productive)" radius={[3, 3, 0, 0]} maxBarSize={22} />
           </BarChart>
@@ -323,10 +403,13 @@ export function StatsPage() {
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={focusData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" fontSize={11} />
+                <XAxis dataKey="date" tickFormatter={dayTick} fontSize={11} minTickGap={6} />
                 <YAxis tickFormatter={(m: number) => `${Math.round(m / 60)}ч`} fontSize={11} />
-                <Tooltip formatter={(v: number) => formatMinutes(v)} />
-                <Bar dataKey="minutes" radius={[3, 3, 0, 0]} maxBarSize={40}>
+                <Tooltip
+                  labelFormatter={(d: string) => fullDate(String(d))}
+                  formatter={(v: number) => [formatMinutes(v), 'Время']}
+                />
+                <Bar dataKey="minutes" name="Время" radius={[3, 3, 0, 0]} maxBarSize={40}>
                   {focusData.map((_, i) => (
                     <Cell key={i} fill={focusColor} />
                   ))}
@@ -342,13 +425,13 @@ export function StatsPage() {
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.h2}>Структура дней</h2>
+        <h2 className={styles.h2}>Структура дней · {rangeLabel(period, fromDate, toDate)}</h2>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={data.by_day}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)} fontSize={11} />
+            <XAxis dataKey="date" tickFormatter={dayTick} fontSize={11} minTickGap={6} />
             <YAxis tickFormatter={(m: number) => `${Math.round(m / 60)}ч`} fontSize={11} />
-            <Tooltip formatter={(v: number) => formatMinutes(v)} />
+            <Tooltip content={<DayTooltip />} />
             <Legend />
             {categoryNames.map((name) => (
               <Bar

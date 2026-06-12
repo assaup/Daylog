@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 
 import styles from './Layout.module.scss';
 
@@ -13,6 +14,8 @@ const TABS = [
 export function Layout() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggle);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -25,6 +28,15 @@ export function Layout() {
       <header className={styles.header}>
         <span className={styles.brand}>⏱️ Трекер времени</span>
         <div className={styles.user}>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={styles.theme}
+            aria-label={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+            title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
           <span>{user?.username}</span>
           <button type="button" onClick={handleLogout} className={styles.logout}>
             Выйти

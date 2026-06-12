@@ -68,7 +68,14 @@ export interface StatsResponse {
   }>;
   by_kind: Array<{ kind: CategoryKind; minutes: number }>;
   by_day: Array<Record<string, string | number>>;
-  trend: Array<{ date: string; productive: number; index: number }>;
+  trend: Array<{
+    date: string;
+    productive: number;
+    neutral: number;
+    waste: number;
+    total: number;
+    index: number;
+  }>;
   prod_hours: Array<{ hour: number; minutes: number }>;
 }
 

@@ -68,6 +68,7 @@ class StatsView(APIView):
         by_day: dict[str, dict] = defaultdict(lambda: defaultdict(int))
         by_day_prod: dict[str, int] = defaultdict(int)
         by_day_total: dict[str, int] = defaultdict(int)
+        by_day_kind: dict[str, dict] = defaultdict(lambda: defaultdict(int))
         prod_by_hour: dict[int, int] = defaultdict(int)
         total_minutes = 0
 
@@ -91,12 +92,14 @@ class StatsView(APIView):
                 by_category[cat_id]["minutes"] += mins
                 by_kind[e.category.kind] += mins
                 by_day[day_key][e.category.name] += mins
+                by_day_kind[day_key][e.category.kind] += mins
                 if e.category.kind == "productive":
                     by_day_prod[day_key] += mins
                     _spread_hours(prod_by_hour, e.start_time, e.end_time)
             else:
                 by_kind["neutral"] += mins
                 by_day[day_key]["Без категории"] += mins
+                by_day_kind[day_key]["neutral"] += mins
 
         productive = by_kind.get("productive", 0)
         waste = by_kind.get("waste", 0)
@@ -154,11 +157,15 @@ class StatsView(APIView):
         while cur <= end_d:
             key = cur.isoformat()
             day_total = by_day_total.get(key, 0)
-            day_prod = by_day_prod.get(key, 0)
+            kinds = by_day_kind.get(key, {})
+            day_prod = kinds.get("productive", 0)
             trend.append(
                 {
                     "date": key,
                     "productive": day_prod,
+                    "neutral": kinds.get("neutral", 0),
+                    "waste": kinds.get("waste", 0),
+                    "total": day_total,
                     "index": round(day_prod / day_total * 100) if day_total else 0,
                 }
             )

@@ -57,6 +57,21 @@
   text-transform: capitalize;
 }
 
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -74,6 +89,23 @@
   flex-direction: column;
   gap: v.$space-xs;
   padding: v.$space-md;
+}
+
+// Accent cards for the headline good/bad metrics.
+.kpiGood {
+  border-left: 3px solid var(--productive);
+
+  .kpiBig {
+    color: var(--productive);
+  }
+}
+
+.kpiBad {
+  border-left: 3px solid var(--waste);
+
+  .kpiBig {
+    color: var(--waste);
+  }
 }
 
 .kpiLabel {
@@ -100,6 +132,62 @@
 .h2 {
   margin: 0 0 v.$space-sm;
   font-size: 16px;
+}
+
+.caption {
+  margin: 0 0 v.$space-sm;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+// Custom table tooltip for the stacked day chart.
+.tip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 20%);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.tipTitle {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tipTable {
+  border-collapse: collapse;
+  width: 100%;
+
+  td {
+    padding: 2px 0;
+  }
+
+  td:first-child {
+    padding-right: 14px;
+    white-space: nowrap;
+  }
+
+  tfoot td {
+    border-top: 1px solid var(--border);
+    padding-top: 5px;
+    font-weight: 600;
+  }
+}
+
+.tipDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.tipValue {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .goalHead {
@@ -136,6 +224,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: v.$space-sm;
+  margin-bottom: v.$space-md;
 }
 
 .focusSelect {

@@ -9,14 +9,17 @@ import { LoginPage } from '@/pages/LoginPage/LoginPage';
 import { RegisterPage } from '@/pages/LoginPage/RegisterPage';
 import { StatsPage } from '@/pages/StatsPage/StatsPage';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 
 export default function App() {
   const loadUser = useAuthStore((s) => s.loadUser);
   const initialized = useAuthStore((s) => s.initialized);
+  const initTheme = useThemeStore((s) => s.init);
 
   useEffect(() => {
+    initTheme();
     loadUser();
-  }, [loadUser]);
+  }, [initTheme, loadUser]);
 
   if (!initialized) {
     return <div style={{ padding: 24 }}>Загрузка…</div>;
