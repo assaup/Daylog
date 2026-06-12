@@ -69,6 +69,55 @@ Vite проксирует `/api` на `http://localhost:8000` (см. `vite.confi
 
 ---
 
+## Деплой на VPS (production)
+
+Прод-конфигурация: бэкенд через **gunicorn** + **whitenoise**, фронт собирается и
+раздаётся через **Caddy**, который также проксирует `/api` на бэкенд и автоматически
+выпускает HTTPS-сертификат для домена.
+
+Файлы: `docker-compose.prod.yml`, `deploy/web.Dockerfile`, `deploy/Caddyfile`,
+`backend/entrypoint.prod.sh`, `.env.prod.example`.
+
+### Шаги
+
+1. **Арендуй VPS** (например Hetzner CX22 или DigitalOcean, Ubuntu 22.04+) и наведи
+   свой домен `A`-записью на IP сервера.
+
+2. **Установи Docker** на сервере:
+   ```bash
+   curl -fsSL https://get.docker.com | sh
+   ```
+
+3. **Скопируй проект** на сервер (через `git clone` своего репозитория).
+
+4. **Создай `.env.prod`** из примера и заполни реальными значениями
+   (домен, длинный `SECRET_KEY`, надёжный пароль БД):
+   ```bash
+   cp .env.prod.example .env.prod
+   nano .env.prod
+   ```
+
+5. **Открой порты** 80 и 443 в фаерволе сервера.
+
+6. **Запусти:**
+   ```bash
+   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+   ```
+   Флаг `--env-file .env.prod` обязателен — из него подставляются `${DOMAIN}` и
+   параметры БД в compose-файл.
+
+7. Создай суперпользователя для админки:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
+   ```
+
+Готово — открой `https://твой-домен`. Caddy сам получит сертификат Let's Encrypt.
+
+> Локально прод-сборку можно проверить, поставив `DOMAIN=localhost` в `.env.prod`
+> (тогда сайт поднимется на `http://localhost` без HTTPS).
+
+---
+
 ## Линтеры
 
 Frontend:
