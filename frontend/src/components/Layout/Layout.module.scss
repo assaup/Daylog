@@ -6,6 +6,10 @@
   min-height: 100vh;
   max-width: 720px;
   margin: 0 auto;
+
+  @include v.tablet {
+    max-width: 900px;
+  }
 }
 
 .header {
@@ -22,6 +26,41 @@
 
 .brand {
   font-weight: 700;
+}
+
+// Desktop nav in the header (hidden on mobile, where the bottom tabbar is used).
+.headerNav {
+  display: none;
+
+  @include v.tablet {
+    display: flex;
+    gap: v.$space-xs;
+    margin: 0 auto;
+  }
+}
+
+.headerLink {
+  padding: 8px 14px;
+  border-radius: v.$radius-sm;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 14px;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.headerLinkActive {
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.username {
+  @media (max-width: 400px) {
+    display: none;
+  }
 }
 
 .user {
@@ -54,6 +93,10 @@
   flex: 1;
   padding: v.$space-md;
   padding-bottom: 96px; // room for the fixed tabbar
+
+  @include v.tablet {
+    padding-bottom: v.$space-md; // no bottom tabbar on desktop
+  }
 }
 
 .tabbar {
@@ -66,6 +109,10 @@
   margin: 0 auto;
   background: var(--surface);
   border-top: 1px solid var(--border);
+
+  @include v.tablet {
+    display: none; // desktop uses the header nav instead
+  }
 }
 
 .tab {

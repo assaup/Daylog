@@ -14,18 +14,18 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
   Line,
   LineChart,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
 
 import { useCategories, useStats } from '@/api/hooks';
 import { CategoryDonut, type DonutDatum } from '@/components/charts/CategoryDonut';
+import { ChartToggle, type ChartKind } from '@/components/charts/ChartToggle';
+import { EntryBars, type EntryBarDatum } from '@/components/charts/EntryBars';
 import { GoalCalendar } from '@/components/GoalCalendar/GoalCalendar';
 import { formatMinutes } from '@/utils/time';
 
@@ -58,30 +58,28 @@ function rangeLabel(period: Period, from: Date, to: Date): string {
 
 const fullDate = (d: string) => format(parseISO(d), 'd MMMM yyyy', { locale: ru });
 
-interface TooltipItem {
-  name: string;
-  value: number;
-  color?: string;
-}
+// Readable axis ticks (default recharts grey is too faint, esp. in dark theme).
+const AXIS_TICK = { fill: 'var(--text-muted)', fontSize: 12 };
+const AXIS_STROKE = 'var(--border)';
 
-/** Table-style tooltip for the stacked "structure of days" chart. */
-function DayTooltip({
-  active,
-  payload,
-  label,
+/** Table breakdown of one day, shown below the "structure of days" chart. */
+function DayBreakdown({
+  day,
+  colorByName,
 }: {
-  active?: boolean;
-  payload?: TooltipItem[];
-  label?: string;
+  day: Record<string, string | number>;
+  colorByName: Record<string, string>;
 }) {
-  if (!active || !payload?.length || !label) return null;
-  const items = payload.filter((p) => p.value > 0).sort((a, b) => b.value - a.value);
+  const items = Object.entries(day)
+    .filter(([k, v]) => k !== 'date' && Number(v) > 0)
+    .map(([name, v]) => ({ name, value: Number(v), color: colorByName[name] ?? 'var(--neutral)' }))
+    .sort((a, b) => b.value - a.value);
   if (items.length === 0) return null;
   const total = items.reduce((s, p) => s + p.value, 0);
 
   return (
     <div className={styles.tip}>
-      <div className={styles.tipTitle}>{fullDate(label)}</div>
+      <div className={styles.tipTitle}>{fullDate(String(day.date))}</div>
       <table className={styles.tipTable}>
         <tbody>
           {items.map((p) => (
@@ -105,24 +103,21 @@ function DayTooltip({
   );
 }
 
-const KIND_LABELS: Record<string, string> = {
-  productive: 'Продуктивно',
-  neutral: 'Нейтрально',
-  waste: 'Потрачено впустую',
-};
-const KIND_COLORS: Record<string, string> = {
-  productive: 'var(--productive)',
-  neutral: 'var(--neutral)',
-  waste: 'var(--waste)',
-};
-
 const GOAL_KEY = 'tt_goal_hours';
+const CAT_CHART_KEY = 'tt_cat_chart';
 
 export function StatsPage() {
   const [period, setPeriod] = useState<Period>('week');
   const [offset, setOffset] = useState(0);
   const [goalHours, setGoalHours] = useState(() => Number(localStorage.getItem(GOAL_KEY)) || 0);
   const [focusCat, setFocusCat] = useState('');
+  const [catChart, setCatChart] = useState<ChartKind>(
+    () => (localStorage.getItem(CAT_CHART_KEY) as ChartKind) || 'donut',
+  );
+  // Selected point index per chart — drives the fixed info shown below it.
+  const [trendSel, setTrendSel] = useState<number | null>(null);
+  const [hoursSel, setHoursSel] = useState<number | null>(null);
+  const [daySel, setDaySel] = useState<number | null>(null);
 
   const { from: fromDate, to: toDate } = useMemo(
     () => computeRange(period, offset),
@@ -143,6 +138,11 @@ export function StatsPage() {
     localStorage.setItem(GOAL_KEY, String(hours));
   };
 
+  const setCatChartPref = (kind: ChartKind) => {
+    setCatChart(kind);
+    localStorage.setItem(CAT_CHART_KEY, kind);
+  };
+
   // Per-day minutes for the focused category (from by_day).
   const focusData = useMemo(() => {
     if (!focusCat || !data) return [];
@@ -155,11 +155,28 @@ export function StatsPage() {
   const focusColor =
     categories.find((c) => c.name === focusCat)?.color ?? 'var(--primary)';
   const focusTotal = focusData.reduce((s, d) => s + d.minutes, 0);
+  const focusBarData: EntryBarDatum[] = focusData.map((d) => ({
+    label: String(Number(d.date.slice(8))),
+    fullLabel: format(parseISO(d.date), 'd MMMM yyyy', { locale: ru }),
+    minutes: d.minutes,
+    color: focusColor,
+  }));
 
   const donutData: DonutDatum[] = useMemo(
     () =>
       (data?.by_category ?? []).map((c) => ({
         name: c.name,
+        minutes: c.minutes,
+        color: c.color,
+      })),
+    [data],
+  );
+
+  const categoryBarData: EntryBarDatum[] = useMemo(
+    () =>
+      (data?.by_category ?? []).map((c) => ({
+        label: c.icon,
+        fullLabel: `${c.icon} ${c.name}`,
         minutes: c.minutes,
         color: c.color,
       })),
@@ -202,44 +219,53 @@ export function StatsPage() {
   // Day number without month for chart X axes, e.g. "2026-05-03" -> "3".
   const dayTick = (d: string) => String(Number(d.slice(8)));
 
+  // Whole-band hover/click -> the active index, for the fixed info below a chart.
+  const picker =
+    (setter: (i: number | null) => void) =>
+    (s: { activeTooltipIndex?: number | null } | null) => {
+      if (s && s.activeTooltipIndex != null) setter(s.activeTooltipIndex);
+    };
+
   return (
     <div className={styles.page}>
-      <div className={styles.tabs} role="tablist" aria-label="Период">
-        {(['week', 'month'] as Period[]).map((p) => (
+      <div className={styles.periodBar}>
+        <div className={styles.segment} role="tablist" aria-label="Период">
+          {(['week', 'month'] as Period[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="tab"
+              aria-selected={period === p}
+              className={`${styles.segBtn} ${period === p ? styles.segActive : ''}`}
+              onClick={() => changePeriod(p)}
+            >
+              {p === 'week' ? 'Неделя' : 'Месяц'}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.nav}>
           <button
-            key={p}
             type="button"
-            role="tab"
-            aria-selected={period === p}
-            className={`${styles.tab} ${period === p ? styles.tabActive : ''}`}
-            onClick={() => changePeriod(p)}
+            onClick={() => setOffset((o) => o + 1)}
+            aria-label={period === 'week' ? 'Предыдущая неделя' : 'Предыдущий месяц'}
           >
-            {p === 'week' ? 'Неделя' : 'Месяц'}
+            ←
           </button>
-        ))}
+          <span className={styles.navLabel}>{rangeLabel(period, fromDate, toDate)}</span>
+          <button
+            type="button"
+            onClick={() => setOffset((o) => Math.max(0, o - 1))}
+            disabled={offset === 0}
+            aria-label={period === 'week' ? 'Следующая неделя' : 'Следующий месяц'}
+          >
+            →
+          </button>
+        </div>
       </div>
 
-      <div className={styles.nav}>
-        <button
-          type="button"
-          onClick={() => setOffset((o) => o + 1)}
-          aria-label={period === 'week' ? 'Предыдущая неделя' : 'Предыдущий месяц'}
-        >
-          ←
-        </button>
-        <span className={styles.navLabel}>{rangeLabel(period, fromDate, toDate)}</span>
-        <button
-          type="button"
-          onClick={() => setOffset((o) => Math.max(0, o - 1))}
-          disabled={offset === 0}
-          aria-label={period === 'week' ? 'Следующая неделя' : 'Следующий месяц'}
-        >
-          →
-        </button>
-      </div>
-
-      <section className={styles.group} aria-label="Полезное время">
-        <h2 className={styles.groupTitle}>Полезное время</h2>
+      <section className={styles.group} aria-label="Распределение времени">
+        <h2 className={styles.groupTitle}>Распределение времени</h2>
         <div className={styles.kpis}>
           <article className={`${styles.kpi} ${styles.kpiGood}`}>
             <span className={styles.kpiLabel}>✅ Полезное</span>
@@ -268,15 +294,15 @@ export function StatsPage() {
         <h2 className={styles.groupTitle}>Режим и сон</h2>
         <div className={styles.kpis}>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>🌅 Средний подъём</span>
+            <span className={styles.kpiLabel}>🌅 Среднее время подъёма</span>
             <strong>{totals.avg_wake_time ?? '—'}</strong>
           </article>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>🌙 Средний отбой</span>
+            <span className={styles.kpiLabel}>🌙 Среднее время отбоя</span>
             <strong>{totals.avg_sleep_time ?? '—'}</strong>
           </article>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>💤 Сна в среднем</span>
+            <span className={styles.kpiLabel}>💤 Часов сна в среднем</span>
             <strong>
               {totals.avg_sleep_minutes != null ? formatMinutes(totals.avg_sleep_minutes) : '—'}
             </strong>
@@ -330,13 +356,24 @@ export function StatsPage() {
           По дням за период. % = доля полезного времени от всего отмеченного за день.
         </p>
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={data.trend}>
+          <LineChart
+            data={data.trend}
+            onMouseMove={picker(setTrendSel)}
+            onClick={picker(setTrendSel)}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="date" tickFormatter={dayTick} fontSize={11} minTickGap={8} />
-            <YAxis domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} fontSize={11} />
-            <Tooltip
-              labelFormatter={(d: string) => fullDate(d)}
-              formatter={(v: number) => [`${v}%`, 'Продуктивность']}
+            <XAxis
+              dataKey="date"
+              tickFormatter={dayTick}
+              tick={AXIS_TICK}
+              stroke={AXIS_STROKE}
+              minTickGap={8}
+            />
+            <YAxis
+              domain={[0, 100]}
+              tickFormatter={(v: number) => `${v}%`}
+              tick={AXIS_TICK}
+              stroke={AXIS_STROKE}
             />
             <Line
               type="monotone"
@@ -344,9 +381,22 @@ export function StatsPage() {
               stroke="var(--productive)"
               strokeWidth={2}
               dot={{ r: 3 }}
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
+        <div className={styles.info} aria-live="polite">
+          {trendSel != null && data.trend[trendSel] ? (
+            <>
+              <span className={styles.infoName}>{fullDate(String(data.trend[trendSel].date))}</span>
+              <span className={styles.infoValue}>
+                {data.trend[trendSel].index}% · {formatMinutes(data.trend[trendSel].productive)}
+              </span>
+            </>
+          ) : (
+            <span className={styles.muted}>Наведи или нажми на день</span>
+          )}
+        </div>
       </section>
 
       <section className={styles.card}>
@@ -355,27 +405,49 @@ export function StatsPage() {
           В среднем за день: сколько минут ты продуктивен в каждый час суток (0–23).
         </p>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={prodHoursAvg}>
+          <BarChart
+            data={prodHoursAvg}
+            onMouseMove={picker(setHoursSel)}
+            onClick={picker(setHoursSel)}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis
               dataKey="hour"
               tickFormatter={(h: number) => `${h}`}
               interval={1}
-              fontSize={10}
+              tick={AXIS_TICK}
+              stroke={AXIS_STROKE}
             />
             <YAxis
               domain={[0, 60]}
               tickFormatter={(m: number) => `${m}м`}
-              fontSize={11}
-              width={32}
+              tick={AXIS_TICK}
+              stroke={AXIS_STROKE}
+              width={34}
             />
-            <Tooltip
-              labelFormatter={(h: number) => `${h}:00–${h + 1}:00`}
-              formatter={(v: number) => [`${v} мин в среднем`, 'Полезное']}
+            <Bar
+              dataKey="minutes"
+              fill="var(--productive)"
+              radius={[3, 3, 0, 0]}
+              maxBarSize={22}
+              isAnimationActive={false}
             />
-            <Bar dataKey="minutes" fill="var(--productive)" radius={[3, 3, 0, 0]} maxBarSize={22} />
           </BarChart>
         </ResponsiveContainer>
+        <div className={styles.info} aria-live="polite">
+          {hoursSel != null && prodHoursAvg[hoursSel] ? (
+            <>
+              <span className={styles.infoName}>
+                {prodHoursAvg[hoursSel].hour}:00–{prodHoursAvg[hoursSel].hour + 1}:00
+              </span>
+              <span className={styles.infoValue}>
+                {prodHoursAvg[hoursSel].minutes} мин в среднем
+              </span>
+            </>
+          ) : (
+            <span className={styles.muted}>Наведи или нажми на час</span>
+          )}
+        </div>
       </section>
 
       <section className={styles.card}>
@@ -400,22 +472,7 @@ export function StatsPage() {
             <p className={styles.muted}>
               Всего «{focusCat}»: <strong>{formatMinutes(focusTotal)}</strong> за период
             </p>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={focusData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" tickFormatter={dayTick} fontSize={11} minTickGap={6} />
-                <YAxis tickFormatter={(m: number) => `${Math.round(m / 60)}ч`} fontSize={11} />
-                <Tooltip
-                  labelFormatter={(d: string) => fullDate(String(d))}
-                  formatter={(v: number) => [formatMinutes(v), 'Время']}
-                />
-                <Bar dataKey="minutes" name="Время" radius={[3, 3, 0, 0]} maxBarSize={40}>
-                  {focusData.map((_, i) => (
-                    <Cell key={i} fill={focusColor} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <EntryBars data={focusBarData} />
           </>
         ) : (
           <p className={styles.muted}>
@@ -427,11 +484,24 @@ export function StatsPage() {
       <section className={styles.card}>
         <h2 className={styles.h2}>Структура дней · {rangeLabel(period, fromDate, toDate)}</h2>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={data.by_day}>
+          <BarChart
+            data={data.by_day}
+            onMouseMove={picker(setDaySel)}
+            onClick={picker(setDaySel)}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="date" tickFormatter={dayTick} fontSize={11} minTickGap={6} />
-            <YAxis tickFormatter={(m: number) => `${Math.round(m / 60)}ч`} fontSize={11} />
-            <Tooltip content={<DayTooltip />} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={dayTick}
+              tick={AXIS_TICK}
+              stroke={AXIS_STROKE}
+              minTickGap={6}
+            />
+            <YAxis
+              tickFormatter={(m: number) => `${Math.round(m / 60)}ч`}
+              tick={AXIS_TICK}
+              stroke={AXIS_STROKE}
+            />
             <Legend />
             {categoryNames.map((name) => (
               <Bar
@@ -440,56 +510,59 @@ export function StatsPage() {
                 stackId="day"
                 fill={colorByName[name] ?? 'var(--neutral)'}
                 maxBarSize={48}
+                isAnimationActive={false}
               />
             ))}
           </BarChart>
         </ResponsiveContainer>
+        {daySel != null && data.by_day[daySel] ? (
+          <DayBreakdown day={data.by_day[daySel]} colorByName={colorByName} />
+        ) : (
+          <p className={styles.muted}>Наведи или нажми на день, чтобы увидеть разбивку</p>
+        )}
       </section>
 
-      <div className={styles.twoCol}>
-        <section className={styles.card}>
-          <h2 className={styles.h2}>По категориям</h2>
-          <CategoryDonut data={donutData} />
-        </section>
-
-        <section className={styles.card}>
-          <h2 className={styles.h2}>По типу времени</h2>
-          <ul className={styles.kindList}>
-            {data.by_kind.map((k) => (
-              <li key={k.kind} className={styles.kindRow}>
-                <span className={styles.kindDot} style={{ background: KIND_COLORS[k.kind] }} />
-                <span>{KIND_LABELS[k.kind]}</span>
-                <span className={styles.kindValue}>{formatMinutes(k.minutes)}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
       <section className={styles.card}>
-        <h2 className={styles.h2}>Топ категорий</h2>
-        <ol className={styles.top}>
-          {data.by_category.slice(0, 8).map((c) => {
-            const pct = totals.minutes ? Math.round((c.minutes / totals.minutes) * 100) : 0;
-            return (
-              <li key={c.id} className={styles.topRow}>
-                <span className={styles.topName}>
-                  {c.icon} {c.name}
-                </span>
-                <div className={styles.topBar}>
-                  <div
-                    className={styles.topBarFill}
-                    style={{ width: `${pct}%`, background: c.color }}
-                  />
-                </div>
-                <span className={styles.topValue}>
-                  {formatMinutes(c.minutes)} · {pct}%
-                </span>
-              </li>
-            );
-          })}
-          {data.by_category.length === 0 && <p className={styles.muted}>Пока нет данных.</p>}
-        </ol>
+        <div className={styles.goalHead}>
+          <h2 className={styles.h2}>По категориям</h2>
+          <ChartToggle value={catChart} onChange={setCatChartPref} />
+        </div>
+
+        {data.by_category.length === 0 ? (
+          <p className={styles.muted}>Пока нет данных за период.</p>
+        ) : (
+          <>
+            {catChart === 'donut' ? (
+              <CategoryDonut data={donutData} />
+            ) : (
+              <EntryBars data={categoryBarData} />
+            )}
+
+            {/* Labelled breakdown — also serves as the chart legend. */}
+            <ol className={styles.top}>
+              {data.by_category.map((c) => {
+                const pct = totals.minutes ? Math.round((c.minutes / totals.minutes) * 100) : 0;
+                return (
+                  <li key={c.id} className={styles.topRow}>
+                    <span className={styles.topName}>
+                      <span className={styles.topDot} style={{ background: c.color }} />
+                      {c.icon} {c.name}
+                    </span>
+                    <div className={styles.topBar}>
+                      <div
+                        className={styles.topBarFill}
+                        style={{ width: `${pct}%`, background: c.color }}
+                      />
+                    </div>
+                    <span className={styles.topValue}>
+                      {formatMinutes(c.minutes)} · {pct}%
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </>
+        )}
       </section>
     </div>
   );

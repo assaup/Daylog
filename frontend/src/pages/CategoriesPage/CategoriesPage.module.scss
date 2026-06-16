@@ -20,9 +20,41 @@
   font-size: 16px;
 }
 
+.error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
 .formRow {
   display: flex;
   gap: v.$space-sm;
+}
+
+// Button that opens the ready-made categories picker.
+.presetsBtn {
+  padding: 12px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: v.$radius-md;
+  color: var(--text);
+  font-weight: 600;
+}
+
+// Grouped category sections.
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .icon {
@@ -100,34 +132,27 @@
   min-width: 0;
 }
 
-.itemKind {
-  padding: 6px 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: v.$radius-sm;
-  color: var(--text);
-  font-size: 13px;
-}
-
-.badge {
+.itemKindTag {
   font-size: 12px;
   color: var(--text-muted);
-  padding: 4px 8px;
+  padding: 3px 8px;
   background: var(--surface-2);
   border-radius: 999px;
+  white-space: nowrap;
 }
 
-.del {
-  width: 30px;
-  height: 30px;
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: v.$radius-sm;
-  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
 
   &:hover {
-    color: var(--danger);
-    border-color: var(--danger);
+    border-color: var(--primary);
   }
 }
 

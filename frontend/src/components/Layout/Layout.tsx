@@ -26,7 +26,24 @@ export function Layout() {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <span className={styles.brand}>⏱️ Трекер времени</span>
+        <span className={styles.brand}>⏱️ DayLog</span>
+
+        {/* Desktop navigation lives in the header. */}
+        <nav className={styles.headerNav} aria-label="Навигация">
+          {TABS.map((tab) => (
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              end={tab.to === '/'}
+              className={({ isActive }) =>
+                `${styles.headerLink} ${isActive ? styles.headerLinkActive : ''}`
+              }
+            >
+              <span aria-hidden="true">{tab.icon}</span> {tab.label}
+            </NavLink>
+          ))}
+        </nav>
+
         <div className={styles.user}>
           <button
             type="button"
@@ -37,7 +54,7 @@ export function Layout() {
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <span>{user?.username}</span>
+          <span className={styles.username}>{user?.username}</span>
           <button type="button" onClick={handleLogout} className={styles.logout}>
             Выйти
           </button>

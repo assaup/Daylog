@@ -27,13 +27,11 @@ class DayLogView(APIView):
         serializer = DayLogSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        # Only touch the fields actually sent, so updating one anchor (e.g.
+        # yesterday's bedtime) doesn't wipe the other (that day's wake).
+        defaults = {k: data[k] for k in ("wake_time", "sleep_time") if k in request.data}
         log, _ = DayLog.objects.update_or_create(
-            user=request.user,
-            date=data["date"],
-            defaults={
-                "wake_time": data.get("wake_time"),
-                "sleep_time": data.get("sleep_time"),
-            },
+            user=request.user, date=data["date"], defaults=defaults
         )
         return Response(DayLogSerializer(log).data)
 

@@ -1,0 +1,38 @@
+@use '../../styles/variables' as v;
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+// Fixed info line under a chart, filled when a segment is tapped.
+.selected {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  min-height: 28px;
+  margin-top: v.$space-sm;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  font-size: 14px;
+}
+
+.selDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.selName {
+  font-weight: 600;
+}
+
+.selValue {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}

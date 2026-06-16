@@ -10,25 +10,42 @@
   color: var(--text-muted);
 }
 
-.tabs {
+// Prominent period filter (sticky on top while scrolling stats).
+.periodBar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
+  flex-direction: column;
   gap: v.$space-sm;
-}
-
-.tab {
-  flex: 1;
-  padding: 10px;
+  padding: v.$space-sm;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: v.$radius-sm;
-  color: var(--text-muted);
+  border-radius: v.$radius-md;
 }
 
-.tabActive {
+.segment {
+  display: flex;
+  padding: 4px;
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.segBtn {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.segActive {
   background: var(--primary);
   color: var(--primary-contrast);
-  border-color: var(--primary);
-  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 }
 
 .nav {
@@ -40,7 +57,7 @@
   button {
     width: 40px;
     height: 40px;
-    background: var(--surface);
+    background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: v.$radius-sm;
     color: var(--text);
@@ -53,7 +70,8 @@
 }
 
 .navLabel {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 16px;
   text-transform: capitalize;
 }
 
@@ -138,6 +156,30 @@
   margin: 0 0 v.$space-sm;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+// Fixed info line under a chart (filled on hover/tap).
+.info {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  min-height: 28px;
+  margin-top: v.$space-sm;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  font-size: 14px;
+}
+
+.infoName {
+  font-weight: 600;
+}
+
+.infoValue {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 // Custom table tooltip for the stacked day chart.
@@ -273,11 +315,20 @@
 
 .top {
   list-style: none;
-  margin: 0;
+  margin: v.$space-md 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: v.$space-sm;
+}
+
+.topDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
 }
 
 .topRow {

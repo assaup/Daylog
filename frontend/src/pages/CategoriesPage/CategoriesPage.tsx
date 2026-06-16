@@ -1,47 +1,75 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 
 import {
   useCategories,
+  useCategoryPresets,
   useCreateCategory,
   useDeleteCategory,
-  useUpdateCategory,
 } from '@/api/hooks';
-import type { CategoryKind } from '@/types';
+import type { Category, CategoryKind } from '@/types';
 
 import styles from './CategoriesPage.module.scss';
+import { CategoryEditModal } from './CategoryEditModal';
+import { PresetPickerModal } from './PresetPickerModal';
+
+const DEFAULT_ICON = '🏷️';
 
 const KIND_OPTIONS: { value: CategoryKind; label: string }[] = [
-  { value: 'productive', label: 'Продуктивно' },
-  { value: 'neutral', label: 'Нейтрально' },
+  { value: 'productive', label: 'Полезное' },
+  { value: 'neutral', label: 'Нейтральное' },
   { value: 'waste', label: 'Впустую' },
 ];
 
 const KIND_LABELS: Record<CategoryKind, string> = {
-  productive: 'Продуктивно',
-  neutral: 'Нейтрально',
+  productive: 'Полезное',
+  neutral: 'Нейтральное',
   waste: 'Впустую',
 };
 
+const KIND_ORDER: CategoryKind[] = ['productive', 'neutral', 'waste'];
+
 export function CategoriesPage() {
   const { data: categories = [] } = useCategories();
+  const { data: presets = [] } = useCategoryPresets();
   const createCat = useCreateCategory();
-  const updateCat = useUpdateCategory();
   const deleteCat = useDeleteCategory();
 
   const [name, setName] = useState('');
   const [color, setColor] = useState('#4f8cff');
-  const [icon, setIcon] = useState('⭐');
+  const [icon, setIcon] = useState(DEFAULT_ICON);
   const [kind, setKind] = useState<CategoryKind>('productive');
+  const [error, setError] = useState('');
+  const [editing, setEditing] = useState<Category | null>(null);
+  const [showPresets, setShowPresets] = useState(false);
+
+  // Presets not already in the user's active categories.
+  const availablePresets = useMemo(() => {
+    const have = new Set(categories.map((c) => c.name.toLowerCase()));
+    return presets.filter((p) => !have.has(p.name.toLowerCase()));
+  }, [presets, categories]);
+
+  const grouped = useMemo(
+    () => KIND_ORDER.map((k) => ({ kind: k, items: categories.filter((c) => c.kind === k) })),
+    [categories],
+  );
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setError('Введите название категории');
+      return;
+    }
+    if (!icon.trim()) {
+      setError('Добавьте иконку (эмодзи)');
+      return;
+    }
+    setError('');
     createCat.mutate(
       { name: name.trim(), color, icon, kind },
       {
         onSuccess: () => {
           setName('');
-          setIcon('⭐');
+          setIcon(DEFAULT_ICON);
         },
       },
     );
@@ -62,7 +90,10 @@ export function CategoriesPage() {
           <input
             className={styles.name}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (error) setError('');
+            }}
             placeholder="Название"
             aria-label="Название категории"
           />
@@ -91,55 +122,64 @@ export function CategoriesPage() {
             Добавить
           </button>
         </div>
+        {error && (
+          <p className={styles.error} role="alert">
+            ⚠ {error}
+          </p>
+        )}
       </form>
 
-      <ul className={styles.list}>
-        {categories.map((c) => (
-          <li key={c.id} className={styles.item}>
-            <span className={styles.dot} style={{ background: c.color }} aria-hidden="true" />
-            <span className={styles.itemIcon} aria-hidden="true">
-              {c.icon}
-            </span>
-            <span className={styles.itemName}>{c.name}</span>
+      {availablePresets.length > 0 && (
+        <button type="button" className={styles.presetsBtn} onClick={() => setShowPresets(true)}>
+          ➕ Добавить из готовых
+        </button>
+      )}
 
-            <select
-              className={styles.itemKind}
-              value={c.kind}
-              disabled={c.is_default}
-              onChange={(e) =>
-                updateCat.mutate({ id: c.id, kind: e.target.value as CategoryKind })
-              }
-              aria-label={`Тип категории ${c.name}`}
-            >
-              {KIND_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+      {grouped.map(
+        (g) =>
+          g.items.length > 0 && (
+            <section key={g.kind} className={styles.group}>
+              <h2 className={styles.groupTitle}>{KIND_LABELS[g.kind]}</h2>
+              <ul className={styles.list}>
+                {g.items.map((c) => (
+                  <li key={c.id} className={styles.item}>
+                    <span className={styles.dot} style={{ background: c.color }} aria-hidden="true" />
+                    <span className={styles.itemIcon} aria-hidden="true">
+                      {c.icon}
+                    </span>
+                    <span className={styles.itemName}>{c.name}</span>
 
-            {c.is_default ? (
-              <span className={styles.badge} title="Категория по умолчанию">
-                базовая
-              </span>
-            ) : (
-              <button
-                type="button"
-                className={styles.del}
-                onClick={() => deleteCat.mutate(c.id)}
-                aria-label={`Удалить категорию ${c.name}`}
-              >
-                ✕
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      onClick={() => setEditing(c)}
+                      aria-label={`Редактировать категорию ${c.name}`}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      onClick={() => deleteCat.mutate(c.id)}
+                      aria-label={`Удалить категорию ${c.name}`}
+                    >
+                      🗑
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ),
+      )}
 
-      <p className={styles.hint}>
-        Тип категории влияет на «индекс продуктивности» в статистике: {KIND_LABELS.productive} ↑,{' '}
-        {KIND_LABELS.waste} ↓.
-      </p>
+      {editing && <CategoryEditModal category={editing} onClose={() => setEditing(null)} />}
+      {showPresets && (
+        <PresetPickerModal
+          presets={availablePresets}
+          onAdd={(p) => createCat.mutate(p)}
+          onClose={() => setShowPresets(false)}
+        />
+      )}
     </div>
   );
 }

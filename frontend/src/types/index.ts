@@ -11,6 +11,13 @@ export interface Category {
   created_at: string;
 }
 
+export interface CategoryPreset {
+  name: string;
+  color: string;
+  icon: string;
+  kind: CategoryKind;
+}
+
 export interface CategoryDetail {
   id: number;
   name: string;

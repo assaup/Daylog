@@ -1,7 +1,9 @@
 from django.db.models import Q
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from .models import Category
+from .models import DEFAULT_CATEGORIES, Category
 from .serializers import CategorySerializer
 
 
@@ -25,6 +27,16 @@ class CategoryViewSet(viewsets.ModelViewSet):
             qs = qs.filter(is_archived=False)
         return qs
 
+    @action(detail=False, methods=["get"])
+    def presets(self, request):
+        """Ready-made categories the user can add with one click."""
+        return Response(
+            [
+                {"name": d["name"], "color": d["color"], "icon": d["icon"], "kind": d["kind"]}
+                for d in DEFAULT_CATEGORIES
+            ]
+        )
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -32,3 +44,44 @@ class CategoryViewSet(viewsets.ModelViewSet):
         # Soft delete to keep historical stats intact.
         instance.is_archived = True
         instance.save(update_fields=["is_archived"])
+
+    @action(detail=True, methods=["post"])
+    def edit(self, request, pk=None):
+        """Edit a category, choosing how it affects existing records.
+
+        Body: {name, color, icon, kind, mode: "all" | "new"}.
+        - "all": update in place — past and future records reflect the change.
+        - "new": only when name/kind changed — archive the current category
+          (keeps history intact) and create a fresh one for future records.
+        Cosmetic-only changes (color/icon) always update in place.
+        """
+        category = self.get_object()
+        if category.user_id != request.user.id:
+            return Response(
+                {"detail": "Нельзя редактировать эту категорию."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        data = request.data
+        new_vals = {
+            "name": data.get("name", category.name),
+            "color": data.get("color", category.color),
+            "icon": data.get("icon", category.icon),
+            "kind": data.get("kind", category.kind),
+        }
+        critical_changed = (
+            new_vals["name"] != category.name or new_vals["kind"] != category.kind
+        )
+
+        if data.get("mode") == "new" and critical_changed:
+            category.is_archived = True
+            category.save(update_fields=["is_archived"])
+            new_cat = Category.objects.create(user=request.user, **new_vals)
+            return Response(
+                CategorySerializer(new_cat).data, status=status.HTTP_201_CREATED
+            )
+
+        for key, value in new_vals.items():
+            setattr(category, key, value)
+        category.save()
+        return Response(CategorySerializer(category).data)

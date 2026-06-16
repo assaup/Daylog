@@ -8,18 +8,30 @@ class CategoryKind(models.TextChoices):
     WASTE = "waste", "Waste"
 
 
-# Seeded for every new user on registration.
+# Seeded for every new user on registration; also offered in the "add from
+# presets" picker so deleted categories can be re-added with one click.
 DEFAULT_CATEGORIES = [
-    {"name": "Учёба", "color": "#4f8cff", "icon": "📚", "kind": CategoryKind.PRODUCTIVE},
+    # Полезное
     {"name": "Работа", "color": "#3ddc97", "icon": "💼", "kind": CategoryKind.PRODUCTIVE},
-    {"name": "Тренировка", "color": "#ff8c42", "icon": "🏋️", "kind": CategoryKind.PRODUCTIVE},
+    {"name": "Учёба", "color": "#4f8cff", "icon": "📚", "kind": CategoryKind.PRODUCTIVE},
     {"name": "Чтение", "color": "#a78bfa", "icon": "📖", "kind": CategoryKind.PRODUCTIVE},
+    {"name": "Спорт", "color": "#ff8c42", "icon": "🏋️", "kind": CategoryKind.PRODUCTIVE},
+    {"name": "Иностранный язык", "color": "#22d3ee", "icon": "🗣️", "kind": CategoryKind.PRODUCTIVE},
+    {"name": "Саморазвитие", "color": "#34d399", "icon": "🌱", "kind": CategoryKind.PRODUCTIVE},
+    {"name": "Хобби", "color": "#f472b6", "icon": "🎨", "kind": CategoryKind.PRODUCTIVE},
+    # Нейтральное
     {"name": "Сон", "color": "#6b7280", "icon": "😴", "kind": CategoryKind.NEUTRAL},
     {"name": "Еда", "color": "#f4c430", "icon": "🍽️", "kind": CategoryKind.NEUTRAL},
     {"name": "Дорога", "color": "#94a3b8", "icon": "🚌", "kind": CategoryKind.NEUTRAL},
-    {"name": "Соцсети / Тикток", "color": "#ff4d6d", "icon": "📱", "kind": CategoryKind.WASTE},
-    {"name": "Сериалы / YouTube", "color": "#e11d48", "icon": "📺", "kind": CategoryKind.WASTE},
+    {"name": "Дела по дому", "color": "#a3a3a3", "icon": "🧹", "kind": CategoryKind.NEUTRAL},
+    {"name": "Общение", "color": "#60a5fa", "icon": "💬", "kind": CategoryKind.NEUTRAL},
+    {"name": "Отдых", "color": "#cbd5e1", "icon": "🛋️", "kind": CategoryKind.NEUTRAL},
     {"name": "Другое", "color": "#cbd5e1", "icon": "❓", "kind": CategoryKind.NEUTRAL},
+    # Потери
+    {"name": "Соцсети", "color": "#ff4d6d", "icon": "📱", "kind": CategoryKind.WASTE},
+    {"name": "Скроллинг", "color": "#fb7185", "icon": "🌀", "kind": CategoryKind.WASTE},
+    {"name": "Сериалы / YouTube", "color": "#e11d48", "icon": "📺", "kind": CategoryKind.WASTE},
+    {"name": "Игры", "color": "#f43f5e", "icon": "🎮", "kind": CategoryKind.WASTE},
 ]
 
 

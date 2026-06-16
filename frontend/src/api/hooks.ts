@@ -5,7 +5,14 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import type { Category, DayLog, EntryDraft, StatsResponse, TimeEntry } from '@/types';
+import type {
+  Category,
+  CategoryPreset,
+  DayLog,
+  EntryDraft,
+  StatsResponse,
+  TimeEntry,
+} from '@/types';
 
 import { api } from './client';
 
@@ -14,6 +21,14 @@ export function useCategories() {
   return useQuery({
     queryKey: ['categories'],
     queryFn: async () => (await api.get<Category[]>('/categories/')).data,
+  });
+}
+
+export function useCategoryPresets() {
+  return useQuery({
+    queryKey: ['category-presets'],
+    queryFn: async () => (await api.get<CategoryPreset[]>('/categories/presets/')).data,
+    staleTime: Infinity,
   });
 }
 
@@ -40,6 +55,23 @@ export function useDeleteCategory() {
   return useMutation({
     mutationFn: async (id: number) => api.delete(`/categories/${id}/`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
+  });
+}
+
+export function useEditCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      mode,
+      ...payload
+    }: Partial<Category> & { id: number; mode: 'all' | 'new' }) =>
+      (await api.post<Category>(`/categories/${id}/edit/`, { ...payload, mode })).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({ queryKey: ['stats'] });
+      qc.invalidateQueries({ queryKey: ['entries'] });
+    },
   });
 }
 
@@ -72,10 +104,12 @@ export function useDayLog(date: string) {
   });
 }
 
+type DayLogInput = { date: string; wake_time?: string | null; sleep_time?: string | null };
+
 export function useSaveDayLog() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: DayLog) => (await api.put<DayLog>('/day/', payload)).data,
+    mutationFn: async (payload: DayLogInput) => (await api.put<DayLog>('/day/', payload)).data,
     onSuccess: (_data, payload) => {
       qc.invalidateQueries({ queryKey: ['daylog', payload.date] });
       qc.invalidateQueries({ queryKey: ['stats'] });

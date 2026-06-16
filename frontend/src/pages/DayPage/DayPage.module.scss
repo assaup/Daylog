@@ -3,7 +3,11 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: v.$space-md;
+  gap: v.$space-sm;
+}
+
+.muted {
+  color: var(--text-muted);
 }
 
 .dateBar {
@@ -11,6 +15,7 @@
   align-items: center;
   justify-content: center;
   gap: v.$space-sm;
+  margin-bottom: v.$space-xs;
 
   button {
     width: 40px;
@@ -31,16 +36,23 @@
   }
 }
 
-.summary {
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.statsSection {
   @include v.card;
 
   display: flex;
   flex-direction: column;
   gap: v.$space-md;
   padding: v.$space-md;
+  margin-top: v.$space-xs;
 }
 
-.summaryHead {
+.statsHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -54,7 +66,7 @@
   gap: v.$space-xs;
 
   strong {
-    font-size: 26px;
+    font-size: 24px;
   }
 }
 
@@ -67,48 +79,77 @@
   min-height: 220px;
 }
 
-.chartSection {
-  @include v.card;
-
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-md;
-  padding: v.$space-md;
-}
-
-.chartTitle {
+// Labelled breakdown under the chart — what each colour means.
+.legend {
+  list-style: none;
   margin: 0;
-  font-size: 16px;
-}
-
-.rows {
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: v.$space-sm;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: v.$space-md;
+.legendRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+
+  @include v.tablet {
+    grid-template-columns: 150px 1fr 120px;
+    align-items: center;
+    gap: v.$space-sm;
+  }
 }
 
-.addBtn {
-  flex: 1;
-  padding: 12px;
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  border-radius: v.$radius-sm;
-  color: var(--text-muted);
-}
-
-.status {
-  flex: 1;
-  text-align: right;
+.legendName {
   font-size: 14px;
-  color: var(--text-muted);
 }
 
-.statusError {
-  color: var(--danger);
+.legendDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.legendBar {
+  height: 10px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.legendFill {
+  height: 100%;
+}
+
+.legendValue {
+  font-size: 13px;
+  color: var(--text-muted);
+
+  @include v.tablet {
+    text-align: right;
+  }
+}
+
+// Floating quick-jump back to the interval form.
+.jumpBtn {
+  position: fixed;
+  right: 16px;
+  bottom: 88px; // above the mobile tab bar
+  padding: 10px 16px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 30%);
+  z-index: 20;
+
+  @include v.tablet {
+    bottom: 24px;
+  }
 }

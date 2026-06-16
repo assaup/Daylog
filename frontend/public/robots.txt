@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /$
+Allow: /login
+Allow: /register
+Disallow: /api/
+
+Sitemap: https://daylogapp.ru/sitemap.xml
