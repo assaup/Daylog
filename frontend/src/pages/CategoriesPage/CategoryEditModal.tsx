@@ -11,6 +11,12 @@ const KIND_OPTIONS: { value: CategoryKind; label: string }[] = [
   { value: 'waste', label: 'Впустую' },
 ];
 
+const emojiOnly = (s: string) =>
+  Array.from(s)
+    .filter((ch) => /\p{Extended_Pictographic}/u.test(ch))
+    .slice(0, 2)
+    .join('');
+
 export function CategoryEditModal({
   category,
   onClose,
@@ -52,8 +58,8 @@ export function CategoryEditModal({
               <input
                 className={styles.icon}
                 value={icon}
-                onChange={(e) => setIcon(e.target.value)}
-                maxLength={2}
+                onChange={(e) => setIcon(emojiOnly(e.target.value))}
+                maxLength={4}
                 aria-label="Иконка"
               />
               <input

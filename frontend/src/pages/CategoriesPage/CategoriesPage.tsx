@@ -12,7 +12,7 @@ import styles from './CategoriesPage.module.scss';
 import { CategoryEditModal } from './CategoryEditModal';
 import { PresetPickerModal } from './PresetPickerModal';
 
-const DEFAULT_ICON = '🏷️';
+const DEFAULT_ICON = '';
 
 const KIND_OPTIONS: { value: CategoryKind; label: string }[] = [
   { value: 'productive', label: 'Полезное' },
@@ -27,6 +27,13 @@ const KIND_LABELS: Record<CategoryKind, string> = {
 };
 
 const KIND_ORDER: CategoryKind[] = ['productive', 'neutral', 'waste'];
+
+// Keep only emoji in the icon field (so plain text can't be entered).
+const emojiOnly = (s: string) =>
+  Array.from(s)
+    .filter((ch) => /\p{Extended_Pictographic}/u.test(ch))
+    .slice(0, 2)
+    .join('');
 
 export function CategoriesPage() {
   const { data: categories = [] } = useCategories();
@@ -59,10 +66,6 @@ export function CategoriesPage() {
       setError('Введите название категории');
       return;
     }
-    if (!icon.trim()) {
-      setError('Добавьте иконку (эмодзи)');
-      return;
-    }
     setError('');
     createCat.mutate(
       { name: name.trim(), color, icon, kind },
@@ -80,30 +83,39 @@ export function CategoriesPage() {
       <form className={styles.form} onSubmit={onSubmit}>
         <h2 className={styles.h2}>Новая категория</h2>
         <div className={styles.formRow}>
-          <input
-            className={styles.icon}
-            value={icon}
-            onChange={(e) => setIcon(e.target.value)}
-            aria-label="Иконка (эмодзи)"
-            maxLength={2}
-          />
-          <input
-            className={styles.name}
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              if (error) setError('');
-            }}
-            placeholder="Название"
-            aria-label="Название категории"
-          />
-          <input
-            className={styles.color}
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            aria-label="Цвет категории"
-          />
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>Иконка</span>
+            <input
+              className={styles.icon}
+              value={icon}
+              onChange={(e) => setIcon(emojiOnly(e.target.value))}
+              aria-label="Иконка (эмодзи, необязательно)"
+              maxLength={4}
+            />
+          </label>
+          <label className={`${styles.field} ${styles.fieldGrow}`}>
+            <span className={styles.fieldLabel}>Название</span>
+            <input
+              className={styles.name}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError('');
+              }}
+              placeholder="Например, Спорт"
+              aria-label="Название категории"
+            />
+          </label>
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>Цвет</span>
+            <input
+              className={styles.color}
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              aria-label="Цвет категории"
+            />
+          </label>
         </div>
         <div className={styles.formRow}>
           <select

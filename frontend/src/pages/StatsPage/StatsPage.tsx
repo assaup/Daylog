@@ -1,9 +1,11 @@
 import {
+  addDays,
   addMonths,
   addWeeks,
   endOfMonth,
   endOfWeek,
   format,
+  isValid,
   parseISO,
   startOfMonth,
   startOfWeek,
@@ -27,17 +29,29 @@ import { CategoryDonut, type DonutDatum } from '@/components/charts/CategoryDonu
 import { ChartToggle, type ChartKind } from '@/components/charts/ChartToggle';
 import { EntryBars, type EntryBarDatum } from '@/components/charts/EntryBars';
 import { GoalCalendar } from '@/components/GoalCalendar/GoalCalendar';
+import { Loader } from '@/components/Loader/Loader';
 import { formatMinutes } from '@/utils/time';
 
 import styles from './StatsPage.module.scss';
 
-type Period = 'week' | 'month';
+type Period = 'day' | 'week' | 'month' | 'custom';
+
+const PERIOD_LABELS: Record<Period, string> = {
+  day: 'День',
+  week: 'Неделя',
+  month: 'Месяц',
+  custom: 'Даты',
+};
 
 const iso = (d: Date) => format(d, 'yyyy-MM-dd');
 
 // offset: 0 = current period, 1 = previous, 2 = two ago, ...
 function computeRange(period: Period, offset: number): { from: Date; to: Date } {
   const now = new Date();
+  if (period === 'day') {
+    const base = addDays(now, -offset);
+    return { from: base, to: base };
+  }
   if (period === 'week') {
     const base = addWeeks(now, -offset);
     return {
@@ -50,10 +64,9 @@ function computeRange(period: Period, offset: number): { from: Date; to: Date } 
 }
 
 function rangeLabel(period: Period, from: Date, to: Date): string {
-  if (period === 'week') {
-    return `${format(from, 'd MMM', { locale: ru })} – ${format(to, 'd MMM', { locale: ru })}`;
-  }
-  return format(from, 'LLLL yyyy', { locale: ru });
+  if (period === 'day') return format(from, 'd MMMM yyyy', { locale: ru });
+  if (period === 'month') return format(from, 'LLLL yyyy', { locale: ru });
+  return `${format(from, 'd MMM', { locale: ru })} – ${format(to, 'd MMM yyyy', { locale: ru })}`;
 }
 
 const fullDate = (d: string) => format(parseISO(d), 'd MMMM yyyy', { locale: ru });
@@ -107,8 +120,12 @@ const GOAL_KEY = 'tt_goal_hours';
 const CAT_CHART_KEY = 'tt_cat_chart';
 
 export function StatsPage() {
-  const [period, setPeriod] = useState<Period>('week');
+  const todayIso = iso(new Date());
+  const [period, setPeriod] = useState<Period>('day');
   const [offset, setOffset] = useState(0);
+  const [dayDate, setDayDate] = useState(todayIso);
+  const [customFrom, setCustomFrom] = useState(() => iso(addDays(new Date(), -6)));
+  const [customTo, setCustomTo] = useState(() => iso(new Date()));
   const [goalHours, setGoalHours] = useState(() => Number(localStorage.getItem(GOAL_KEY)) || 0);
   const [focusCat, setFocusCat] = useState('');
   const [catChart, setCatChart] = useState<ChartKind>(
@@ -119,10 +136,21 @@ export function StatsPage() {
   const [hoursSel, setHoursSel] = useState<number | null>(null);
   const [daySel, setDaySel] = useState<number | null>(null);
 
-  const { from: fromDate, to: toDate } = useMemo(
-    () => computeRange(period, offset),
-    [period, offset],
-  );
+  const { from: fromDate, to: toDate } = useMemo(() => {
+    if (period === 'custom') {
+      const a = parseISO(customFrom);
+      const b = parseISO(customTo);
+      // Ignore half-typed / cleared dates instead of crashing.
+      if (!isValid(a) || !isValid(b)) return computeRange('week', 0);
+      return a <= b ? { from: a, to: b } : { from: b, to: a };
+    }
+    if (period === 'day') {
+      const d = parseISO(dayDate);
+      if (!isValid(d)) return computeRange('day', 0);
+      return { from: d, to: d };
+    }
+    return computeRange(period, offset);
+  }, [period, offset, dayDate, customFrom, customTo]);
   const from = iso(fromDate);
   const to = iso(toDate);
   const { data, isLoading } = useStats(from, to, Math.round(goalHours * 60));
@@ -131,6 +159,14 @@ export function StatsPage() {
   const changePeriod = (p: Period) => {
     setPeriod(p);
     setOffset(0);
+    if (p === 'day') setDayDate(todayIso);
+  };
+
+  const shiftDayDate = (delta: number) => {
+    setDayDate((cur) => {
+      const next = iso(addDays(parseISO(cur), delta));
+      return next > todayIso ? cur : next;
+    });
   };
 
   const setGoal = (hours: number) => {
@@ -199,10 +235,14 @@ export function StatsPage() {
   }, [data]);
 
   if (isLoading || !data) {
-    return <p className={styles.muted}>Загрузка статистики…</p>;
+    return <Loader text="Загрузка статистики…" />;
   }
 
   const { totals } = data;
+  const isDay = period === 'day';
+  // The streak is "current, up to today" — only meaningful for the current period.
+  const showStreak =
+    period === 'day' ? dayDate === todayIso : period !== 'custom' && offset === 0;
   const productiveShare = totals.minutes ? Math.round((totals.productive / totals.minutes) * 100) : 0;
   const wasteShare = totals.minutes ? Math.round((totals.waste / totals.minutes) * 100) : 0;
   const avgProductivePerDay = totals.filled_days
@@ -230,7 +270,7 @@ export function StatsPage() {
     <div className={styles.page}>
       <div className={styles.periodBar}>
         <div className={styles.segment} role="tablist" aria-label="Период">
-          {(['week', 'month'] as Period[]).map((p) => (
+          {(['day', 'week', 'month', 'custom'] as Period[]).map((p) => (
             <button
               key={p}
               type="button"
@@ -239,29 +279,74 @@ export function StatsPage() {
               className={`${styles.segBtn} ${period === p ? styles.segActive : ''}`}
               onClick={() => changePeriod(p)}
             >
-              {p === 'week' ? 'Неделя' : 'Месяц'}
+              {PERIOD_LABELS[p]}
             </button>
           ))}
         </div>
 
-        <div className={styles.nav}>
-          <button
-            type="button"
-            onClick={() => setOffset((o) => o + 1)}
-            aria-label={period === 'week' ? 'Предыдущая неделя' : 'Предыдущий месяц'}
-          >
-            ←
-          </button>
-          <span className={styles.navLabel}>{rangeLabel(period, fromDate, toDate)}</span>
-          <button
-            type="button"
-            onClick={() => setOffset((o) => Math.max(0, o - 1))}
-            disabled={offset === 0}
-            aria-label={period === 'week' ? 'Следующая неделя' : 'Следующий месяц'}
-          >
-            →
-          </button>
-        </div>
+        {period === 'custom' && (
+          <div className={styles.customRange}>
+            <label>
+              <span>с</span>
+              <input
+                type="date"
+                value={customFrom}
+                max={todayIso}
+                onChange={(e) => setCustomFrom(e.target.value)}
+              />
+            </label>
+            <label>
+              <span>по</span>
+              <input
+                type="date"
+                value={customTo}
+                max={todayIso}
+                onChange={(e) => setCustomTo(e.target.value)}
+              />
+            </label>
+          </div>
+        )}
+
+        {period === 'day' && (
+          <div className={styles.nav}>
+            <button type="button" onClick={() => shiftDayDate(-1)} aria-label="Предыдущий день">
+              ←
+            </button>
+            <input
+              className={styles.dayInput}
+              type="date"
+              value={dayDate}
+              max={todayIso}
+              onChange={(e) => e.target.value && setDayDate(e.target.value)}
+              aria-label="Выбор дня"
+            />
+            <button
+              type="button"
+              onClick={() => shiftDayDate(1)}
+              disabled={dayDate >= todayIso}
+              aria-label="Следующий день"
+            >
+              →
+            </button>
+          </div>
+        )}
+
+        {(period === 'week' || period === 'month') && (
+          <div className={styles.nav}>
+            <button type="button" onClick={() => setOffset((o) => o + 1)} aria-label="Предыдущий период">
+              ←
+            </button>
+            <span className={styles.navLabel}>{rangeLabel(period, fromDate, toDate)}</span>
+            <button
+              type="button"
+              onClick={() => setOffset((o) => Math.max(0, o - 1))}
+              disabled={offset === 0}
+              aria-label="Следующий период"
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
 
       <section className={styles.group} aria-label="Распределение времени">
@@ -277,16 +362,20 @@ export function StatsPage() {
             <strong className={styles.kpiBig}>{formatMinutes(totals.waste)}</strong>
             <span className={styles.kpiHint}>{wasteShare}% от отмеченного</span>
           </article>
-          <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>Полезное в день</span>
-            <strong>{formatMinutes(avgProductivePerDay)}</strong>
-            <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
-          </article>
-          <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>Впустую в день</span>
-            <strong>{formatMinutes(avgWastePerDay)}</strong>
-            <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
-          </article>
+          {!isDay && (
+            <>
+              <article className={styles.kpi}>
+                <span className={styles.kpiLabel}>Полезное в день</span>
+                <strong>{formatMinutes(avgProductivePerDay)}</strong>
+                <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
+              </article>
+              <article className={styles.kpi}>
+                <span className={styles.kpiLabel}>Впустую в день</span>
+                <strong>{formatMinutes(avgWastePerDay)}</strong>
+                <span className={styles.kpiHint}>по {totals.filled_days} заполненным дн.</span>
+              </article>
+            </>
+          )}
         </div>
       </section>
 
@@ -294,15 +383,15 @@ export function StatsPage() {
         <h2 className={styles.groupTitle}>Режим и сон</h2>
         <div className={styles.kpis}>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>🌅 Среднее время подъёма</span>
+            <span className={styles.kpiLabel}>🌅 {isDay ? 'Время подъёма' : 'Среднее время подъёма'}</span>
             <strong>{totals.avg_wake_time ?? '—'}</strong>
           </article>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>🌙 Среднее время отбоя</span>
+            <span className={styles.kpiLabel}>🌙 {isDay ? 'Время отбоя' : 'Среднее время отбоя'}</span>
             <strong>{totals.avg_sleep_time ?? '—'}</strong>
           </article>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>💤 Часов сна в среднем</span>
+            <span className={styles.kpiLabel}>💤 {isDay ? 'Часов сна' : 'Часов сна в среднем'}</span>
             <strong>
               {totals.avg_sleep_minutes != null ? formatMinutes(totals.avg_sleep_minutes) : '—'}
             </strong>
@@ -329,27 +418,36 @@ export function StatsPage() {
         {goalHours > 0 && (
           <div className={styles.goalCards}>
             <div className={styles.kpi}>
-              <span className={styles.kpiLabel}>Цель достигнута</span>
+              <span className={styles.kpiLabel}>{isDay ? 'Цель за день' : 'Цель достигнута'}</span>
               <strong>
-                {totals.goal_days} из {data.trend.length} дн.
+                {isDay
+                  ? totals.goal_days > 0
+                    ? 'Выполнена ✓'
+                    : 'Не выполнена'
+                  : `${totals.goal_days} из ${data.trend.length} дн.`}
               </strong>
             </div>
-            <div className={styles.kpi}>
-              <span className={styles.kpiLabel}>🔥 Серия подряд</span>
-              <strong>{totals.current_streak} дн.</strong>
-            </div>
+            {showStreak && (
+              <div className={styles.kpi}>
+                <span className={styles.kpiLabel}>🔥 Текущий стрик</span>
+                <strong>{totals.current_streak} дн.</strong>
+              </div>
+            )}
           </div>
         )}
 
-        <GoalCalendar
-          period={period}
-          from={fromDate}
-          to={toDate}
-          days={data.trend}
-          goal={Math.round(goalHours * 60)}
-        />
+        {(period === 'week' || period === 'month') && (
+          <GoalCalendar
+            period={period}
+            from={fromDate}
+            to={toDate}
+            days={data.trend}
+            goal={Math.round(goalHours * 60)}
+          />
+        )}
       </section>
 
+      {!isDay && (
       <section className={styles.card}>
         <h2 className={styles.h2}>📈 Тренд продуктивности · {rangeLabel(period, fromDate, toDate)}</h2>
         <p className={styles.caption}>
@@ -398,6 +496,7 @@ export function StatsPage() {
           )}
         </div>
       </section>
+      )}
 
       <section className={styles.card}>
         <h2 className={styles.h2}>⏰ Продуктивные часы дня</h2>
@@ -450,6 +549,7 @@ export function StatsPage() {
         </div>
       </section>
 
+      {!isDay && (
       <section className={styles.card}>
         <div className={styles.goalHead}>
           <h2 className={styles.h2}>🔍 Фокус по категории</h2>
@@ -480,7 +580,9 @@ export function StatsPage() {
           </p>
         )}
       </section>
+      )}
 
+      {!isDay && (
       <section className={styles.card}>
         <h2 className={styles.h2}>Структура дней · {rangeLabel(period, fromDate, toDate)}</h2>
         <ResponsiveContainer width="100%" height={260}>
@@ -521,6 +623,7 @@ export function StatsPage() {
           <p className={styles.muted}>Наведи или нажми на день, чтобы увидеть разбивку</p>
         )}
       </section>
+      )}
 
       <section className={styles.card}>
         <div className={styles.goalHead}>

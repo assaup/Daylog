@@ -37,6 +37,26 @@ class CategoryViewSet(viewsets.ModelViewSet):
             ]
         )
 
+    def create(self, request, *args, **kwargs):
+        # Re-creating a previously deleted (archived) category restores the same
+        # row instead of making a duplicate — keeps old entries linked to it.
+        name = str(request.data.get("name", "")).strip()
+        archived = (
+            Category.objects.filter(user=request.user, is_archived=True, name__iexact=name)
+            .order_by("-id")
+            .first()
+        )
+        if name and archived:
+            archived.is_archived = False
+            archived.color = request.data.get("color", archived.color)
+            archived.icon = request.data.get("icon", archived.icon)
+            archived.kind = request.data.get("kind", archived.kind)
+            archived.save()
+            return Response(
+                CategorySerializer(archived).data, status=status.HTTP_201_CREATED
+            )
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 

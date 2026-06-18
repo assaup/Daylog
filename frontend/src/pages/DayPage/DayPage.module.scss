@@ -11,11 +11,16 @@
 }
 
 .dateBar {
+  position: sticky;
+  top: v.$header-h;
+  z-index: 8;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: v.$space-sm;
+  padding: v.$space-sm 0;
   margin-bottom: v.$space-xs;
+  background: var(--bg);
 
   button {
     width: 40px;
@@ -61,18 +66,13 @@
 }
 
 .total {
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-xs;
+  margin: v.$space-sm 0 0;
+  text-align: center;
+  color: var(--text-muted);
 
   strong {
-    font-size: 24px;
+    color: var(--text);
   }
-}
-
-.totalLabel {
-  font-size: 13px;
-  color: var(--text-muted);
 }
 
 .chart {
@@ -132,6 +132,142 @@
   @include v.tablet {
     text-align: right;
   }
+}
+
+// --- Read-only view of a past day ---
+.readHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-sm;
+}
+
+.readBadge {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.editBtn {
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: v.$radius-md;
+  font-weight: 600;
+  font-size: 14px;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+  }
+}
+
+// Sleep / wake summary card (read-only past day).
+.sleepCard {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-md;
+  overflow: hidden;
+}
+
+.sleepRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-md;
+  padding: v.$space-sm v.$space-md;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.sleepLabel {
+  color: var(--text-muted);
+}
+
+.sleepValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sleepTotal {
+  background: var(--surface-2);
+
+  .sleepValue {
+    color: var(--primary);
+  }
+}
+
+.sleepRange {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+// Future day notice.
+.futureBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: v.$space-sm;
+  padding: v.$space-lg;
+  margin-top: v.$space-lg;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.futureIcon {
+  font-size: 40px;
+}
+
+.futureText {
+  margin: 0;
+}
+
+.readList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.readItem {
+  display: flex;
+  align-items: center;
+  gap: v.$space-md;
+  flex-wrap: wrap;
+  padding: v.$space-md;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--border);
+  border-radius: v.$radius-md;
+}
+
+.readTime {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.readCat {
+  flex: 1;
+}
+
+.readDur {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.readNote {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 // Floating quick-jump back to the interval form.

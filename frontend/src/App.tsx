@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { Layout } from '@/components/Layout/Layout';
+import { Loader } from '@/components/Loader/Loader';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { CategoriesPage } from '@/pages/CategoriesPage/CategoriesPage';
 import { DayPage } from '@/pages/DayPage/DayPage';
@@ -22,7 +23,7 @@ export default function App() {
   }, [initTheme, loadUser]);
 
   if (!initialized) {
-    return <div style={{ padding: 24 }}>Загрузка…</div>;
+    return <Loader />;
   }
 
   return (

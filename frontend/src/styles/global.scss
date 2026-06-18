@@ -116,3 +116,11 @@ a {
 .recharts-tooltip-cursor {
   fill: color-mix(in srgb, var(--text) 8%, transparent) !important;
 }
+
+// Remove the focus rectangle drawn around a clicked pie sector / bar.
+.recharts-wrapper :focus,
+.recharts-sector,
+.recharts-rectangle,
+.recharts-surface {
+  outline: none !important;
+}

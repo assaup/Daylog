@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import type { Category, EntryDraft } from '@/types';
 
 import styles from './IntervalRow.module.scss';
@@ -13,45 +15,35 @@ interface Props {
 
 export function IntervalRow({ index, draft, categories, error, onChange, onRemove }: Props) {
   const activeCat = categories.find((c) => c.id === draft.category);
+  const accent = error ? 'var(--danger)' : (activeCat?.color ?? 'var(--border)');
 
   return (
     <div
       className={`${styles.row} ${error ? styles.rowError : ''}`}
-      style={{ borderLeftColor: error ? 'var(--danger)' : activeCat?.color ?? 'var(--border)' }}
+      style={{ '--cat': accent } as CSSProperties}
     >
-      <div className={styles.top}>
-        <div className={styles.times}>
-          <label className={styles.timeField}>
-            <span className="visually-hidden">Начало интервала {index + 1}</span>
-            <input
-              type="time"
-              value={draft.start_time}
-              onChange={(e) => onChange(index, { start_time: e.target.value })}
-              aria-label={`Начало интервала ${index + 1}`}
-            />
-          </label>
-          <span className={styles.dash} aria-hidden="true">
-            –
-          </span>
-          <label className={styles.timeField}>
-            <span className="visually-hidden">Конец интервала {index + 1}</span>
-            <input
-              type="time"
-              value={draft.end_time}
-              onChange={(e) => onChange(index, { end_time: e.target.value })}
-              aria-label={`Конец интервала ${index + 1}`}
-            />
-          </label>
-        </div>
-
-        <button
-          type="button"
-          className={styles.remove}
-          onClick={() => onRemove(index)}
-          aria-label={`Удалить интервал ${index + 1}`}
-        >
-          ✕
-        </button>
+      <div className={styles.times}>
+        <label className={styles.timeField}>
+          <span className="visually-hidden">Начало интервала {index + 1}</span>
+          <input
+            type="time"
+            value={draft.start_time}
+            onChange={(e) => onChange(index, { start_time: e.target.value })}
+            aria-label={`Начало интервала ${index + 1}`}
+          />
+        </label>
+        <span className={styles.dash} aria-hidden="true">
+          –
+        </span>
+        <label className={styles.timeField}>
+          <span className="visually-hidden">Конец интервала {index + 1}</span>
+          <input
+            type="time"
+            value={draft.end_time}
+            onChange={(e) => onChange(index, { end_time: e.target.value })}
+            aria-label={`Конец интервала ${index + 1}`}
+          />
+        </label>
       </div>
 
       <select
@@ -78,6 +70,15 @@ export function IntervalRow({ index, draft, categories, error, onChange, onRemov
         onChange={(e) => onChange(index, { note: e.target.value })}
         aria-label={`Заметка интервала ${index + 1}`}
       />
+
+      <button
+        type="button"
+        className={styles.remove}
+        onClick={() => onRemove(index)}
+        aria-label={`Удалить интервал ${index + 1}`}
+      >
+        ✕
+      </button>
 
       {error && (
         <p className={styles.errorText} role="alert">

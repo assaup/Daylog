@@ -44,7 +44,7 @@ export function DayFrame({ bounds }: { bounds: Bounds }) {
 
       <div className={styles.divider} />
 
-      <div className={`${styles.field} ${bounds.sleepError ? styles.invalid : ''}`}>
+      <div className={styles.field}>
         <span className={styles.label}>🌙 Отбой сегодня</span>
         <input
           type="time"
@@ -53,12 +53,6 @@ export function DayFrame({ bounds }: { bounds: Bounds }) {
           aria-label="Время отбоя сегодня"
         />
       </div>
-
-      {bounds.sleepError && (
-        <p className={styles.error} role="alert">
-          ⚠ {bounds.sleepError}
-        </p>
-      )}
     </section>
   );
 }

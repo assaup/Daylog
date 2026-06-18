@@ -1,28 +1,41 @@
 @use '../../styles/variables' as v;
 
 .row {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'times remove'
+    'category category'
+    'note note'
+    'error error';
   gap: v.$space-sm;
   padding: v.$space-md;
-  background: var(--surface);
+  padding-left: calc(#{v.$space-md} + 4px);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--cat) 14%, var(--surface)),
+    var(--surface) 70px
+  );
   border: 1px solid var(--border);
-  border-left: 4px solid var(--border);
+  border-left: 6px solid var(--cat, var(--border));
   border-radius: v.$radius-md;
+
+  @include v.tablet {
+    grid-template-columns: auto 1fr 1.4fr auto;
+    grid-template-areas:
+      'times category note remove'
+      'error error error error';
+    align-items: center;
+    gap: v.$space-md;
+  }
 }
 
 .rowError {
-  background: color-mix(in srgb, var(--danger) 6%, var(--surface));
-}
-
-.top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: v.$space-sm;
+  background: color-mix(in srgb, var(--danger) 7%, var(--surface));
 }
 
 .times {
+  grid-area: times;
   display: flex;
   align-items: center;
   gap: v.$space-sm;
@@ -41,6 +54,14 @@
   color: var(--text-muted);
 }
 
+.category {
+  grid-area: category;
+}
+
+.note {
+  grid-area: note;
+}
+
 .category,
 .note {
   width: 100%;
@@ -52,6 +73,8 @@
 }
 
 .remove {
+  grid-area: remove;
+  justify-self: end;
   width: 36px;
   height: 36px;
   flex: 0 0 auto;
@@ -67,36 +90,8 @@
 }
 
 .errorText {
+  grid-area: error;
   margin: 0;
   font-size: 13px;
   color: var(--danger);
-}
-
-// On wider screens lay the controls out in a single row.
-@include v.tablet {
-  .row {
-    display: grid;
-    grid-template-columns: auto 1fr 1.4fr;
-    grid-template-areas: 'top category note';
-    align-items: center;
-    gap: v.$space-md;
-  }
-
-  .top {
-    grid-area: top;
-    justify-content: flex-start;
-  }
-
-  .category {
-    grid-area: category;
-    width: auto;
-  }
-
-  .note {
-    grid-area: note;
-  }
-
-  .errorText {
-    grid-column: 1 / -1;
-  }
 }

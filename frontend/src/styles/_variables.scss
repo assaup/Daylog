@@ -11,6 +11,8 @@ $space-lg: 24px;
 $bp-tablet: 768px;
 $bp-desktop: 1024px;
 
+$header-h: 60px;
+
 @mixin tablet {
   @media (min-width: $bp-tablet) {
     @content;

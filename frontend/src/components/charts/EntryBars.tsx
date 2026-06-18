@@ -29,20 +29,18 @@ export function EntryBars({ data }: { data: EntryBarDatum[] }) {
   const chartData = data.map((d) => ({ ...d, hours: d.minutes / 60 }));
   const sel = active != null ? data[active] : null;
 
-  // Whole-column-height interaction: the chart reports the active band index.
+  // Click a column (anywhere along its height) to select; click again to clear.
   const pick = (s: ChartClickState) => {
-    if (s && s.activeTooltipIndex != null) setActive(s.activeTooltipIndex);
+    if (s && s.activeTooltipIndex != null) {
+      const i = s.activeTooltipIndex;
+      setActive((cur) => (cur === i ? null : i));
+    }
   };
 
   return (
     <div>
       <ResponsiveContainer width="100%" height={220}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 8, right: 8, bottom: 0, left: -16 }}
-          onMouseMove={pick}
-          onClick={pick}
-        >
+        <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -16 }} onClick={pick}>
           <XAxis
             dataKey="label"
             tick={AXIS_TICK}
@@ -56,6 +54,7 @@ export function EntryBars({ data }: { data: EntryBarDatum[] }) {
             tick={AXIS_TICK}
             tickFormatter={(h: number) => `${h}ч`}
             allowDecimals={false}
+            domain={[0, (dataMax: number) => Math.max(2, Math.ceil(dataMax))]}
             stroke="var(--border)"
           />
           <Bar dataKey="hours" radius={[4, 4, 0, 0]} maxBarSize={44} isAnimationActive={false}>
@@ -74,7 +73,7 @@ export function EntryBars({ data }: { data: EntryBarDatum[] }) {
             <span className={styles.selValue}>{formatMinutes(sel.minutes)}</span>
           </>
         ) : (
-          <span className={styles.hint}>Наведи или нажми на столбец</span>
+          <span className={styles.hint}>Нажми на столбец, чтобы увидеть детали</span>
         )}
       </div>
     </div>

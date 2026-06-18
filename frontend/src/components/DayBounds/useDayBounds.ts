@@ -18,7 +18,7 @@ const prevDay = (date: string): string => {
  *  - sleep: tonight's bedtime,
  *  - sleepMinutes: last night's sleep = prevSleep -> wake.
  */
-export function useDayBounds(date: string, firstStart?: string, lastEnd?: string) {
+export function useDayBounds(date: string, firstStart?: string) {
   const prevDate = prevDay(date);
   const { data } = useDayLog(date);
   const { data: prevData } = useDayLog(prevDate);
@@ -57,9 +57,7 @@ export function useDayBounds(date: string, firstStart?: string, lastEnd?: string
     wake && firstStart && wake > firstStart
       ? `Подъём позже первого интервала (${firstStart})`
       : '';
-  const sleepError =
-    sleep && lastEnd && sleep < lastEnd ? `Отбой раньше последнего интервала (${lastEnd})` : '';
-  const hasTodayError = Boolean(wakeError || sleepError);
+  const hasTodayError = Boolean(wakeError);
 
   // Save today's wake + bedtime.
   useEffect(() => {
@@ -104,7 +102,6 @@ export function useDayBounds(date: string, firstStart?: string, lastEnd?: string
     setSleep,
     setPrevSleep,
     wakeError,
-    sleepError,
     sleepMinutes,
   };
 }

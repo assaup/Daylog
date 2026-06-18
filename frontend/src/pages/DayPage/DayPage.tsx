@@ -1,23 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useCategories, useDayEntries, useSaveDay } from '@/api/hooks';
-import { CategoryDonut, type DonutDatum } from '@/components/charts/CategoryDonut';
-import { ChartToggle, type ChartKind } from '@/components/charts/ChartToggle';
-import { EntryBars, type EntryBarDatum } from '@/components/charts/EntryBars';
 import { DayFrame } from '@/components/DayBounds/DayFrame';
 import { useDayBounds } from '@/components/DayBounds/useDayBounds';
 import { IntervalRow } from '@/components/IntervalRow/IntervalRow';
-import type { EntryDraft } from '@/types';
+import type { Category, EntryDraft } from '@/types';
 import { validateIntervals } from '@/utils/intervals';
 import { diffMinutes, formatMinutes, toHHMM } from '@/utils/time';
 
 import styles from './DayPage.module.scss';
 
 const AUTOSAVE_DELAY = 800;
-const CHART_PREF_KEY = 'tt_day_chart';
-const today = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
-const emptyRow = (start = ''): EntryDraft => ({
+type Row = EntryDraft & { _uid: string };
+
+let uidSeq = 0;
+const nextUid = () => `r${(uidSeq += 1)}`;
+
+const emptyRow = (start = ''): Row => ({
+  _uid: nextUid(),
   start_time: start,
   end_time: '',
   category: null,
@@ -26,21 +28,20 @@ const emptyRow = (start = ''): EntryDraft => ({
 
 const isComplete = (r: EntryDraft) => Boolean(r.start_time && r.end_time && r.category);
 
-/** Ensure there is exactly one trailing empty row to fill next. */
-function withTrailingEmpty(rows: EntryDraft[]): EntryDraft[] {
-  const last = rows[rows.length - 1];
-  if (!last || isComplete(last)) {
-    return [...rows, emptyRow(last?.end_time ?? '')];
-  }
-  return rows;
+/** Sort filled intervals by start time, keep unfinished rows last, ensure one trailing empty. */
+function normalize(rows: Row[]): Row[] {
+  const complete = rows.filter(isComplete).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const incomplete = rows.filter((r) => !isComplete(r));
+  const result = [...complete, ...incomplete];
+  const last = result[result.length - 1];
+  if (!last || isComplete(last)) result.push(emptyRow(last?.end_time ?? ''));
+  return result;
 }
 
 export function DayPage() {
-  const [date, setDate] = useState(today());
-  const [rows, setRows] = useState<EntryDraft[]>(() => [emptyRow()]);
-  const [chart, setChart] = useState<ChartKind>(
-    () => (localStorage.getItem(CHART_PREF_KEY) as ChartKind) || 'donut',
-  );
+  const [date, setDate] = useState(todayStr());
+  const [rows, setRows] = useState<Row[]>(() => [emptyRow()]);
+  const [editMode, setEditMode] = useState(false);
 
   const dirtyRef = useRef(false);
   const loadedDateRef = useRef<string | null>(null);
@@ -51,15 +52,27 @@ export function DayPage() {
   const { data: savedEntries } = useDayEntries(date);
   const saveDay = useSaveDay();
 
+  const isPast = date < todayStr();
+  const isFuture = date > todayStr();
+
   const errors = useMemo(() => validateIntervals(rows), [rows]);
 
-  const setChartPref = (kind: ChartKind) => {
-    setChart(kind);
-    localStorage.setItem(CHART_PREF_KEY, kind);
-  };
+  // Category options include archived categories still referenced by entries,
+  // so a deleted category's intervals don't show up blank.
+  const optionCategories = useMemo<Category[]>(() => {
+    const byId = new Map<number, Category>(categories.map((c) => [c.id, c]));
+    for (const e of savedEntries ?? []) {
+      const d = e.category_detail;
+      if (d && !byId.has(d.id)) {
+        byId.set(d.id, { ...d, is_archived: true, is_default: false, created_at: '' });
+      }
+    }
+    return [...byId.values()];
+  }, [categories, savedEntries]);
 
   useEffect(() => {
     dirtyRef.current = false;
+    setEditMode(false);
   }, [date]);
 
   // Load saved entries once per day.
@@ -71,14 +84,14 @@ export function DayPage() {
       setRows([emptyRow()]);
       return;
     }
-    const loaded: EntryDraft[] = savedEntries.map((e) => ({
-      id: e.id,
+    const loaded: Row[] = savedEntries.map((e) => ({
+      _uid: nextUid(),
       start_time: toHHMM(e.start_time),
       end_time: toHHMM(e.end_time),
       category: e.category,
       note: e.note,
     }));
-    setRows(withTrailingEmpty(loaded));
+    setRows(normalize(loaded));
   }, [savedEntries, date]);
 
   // Scroll to the newly auto-added interval so entry stays in view.
@@ -89,14 +102,13 @@ export function DayPage() {
     prevRowCount.current = rows.length;
   }, [rows.length]);
 
-  const persist = (current: EntryDraft[]) => {
+  const persist = (current: Row[]) => {
     saveDay.mutate(
       { date, entries: current.filter(isComplete) },
       { onSuccess: () => (dirtyRef.current = false) },
     );
   };
 
-  // Debounced autosave — never persist while there are validation errors.
   useEffect(() => {
     if (!dirtyRef.current || errors.size > 0) return;
     const timer = setTimeout(() => persist(rows), AUTOSAVE_DELAY);
@@ -107,20 +119,18 @@ export function DayPage() {
   const handleChange = (index: number, patch: Partial<EntryDraft>) => {
     dirtyRef.current = true;
     setRows((prev) => {
-      let next = prev.map((r, i) => (i === index ? { ...r, ...patch } : r));
-      // Keep the timeline continuous: next interval starts where this ends.
-      if (patch.end_time !== undefined && index + 1 < next.length) {
+      const next = prev.map((r, i) => (i === index ? { ...r, ...patch } : r));
+      // Continue the timeline: fill the next row's empty start with this end.
+      if (patch.end_time && index + 1 < next.length && !next[index + 1].start_time) {
         next[index + 1] = { ...next[index + 1], start_time: patch.end_time };
       }
-      // A finished last row spawns a fresh empty one — no manual "add" needed.
-      next = withTrailingEmpty(next);
-      return next;
+      return normalize(next);
     });
   };
 
   const handleRemove = (index: number) => {
     dirtyRef.current = true;
-    setRows((prev) => withTrailingEmpty(prev.filter((_, i) => i !== index)));
+    setRows((prev) => normalize(prev.filter((_, i) => i !== index)));
   };
 
   const totalMinutes = useMemo(
@@ -129,44 +139,12 @@ export function DayPage() {
     [rows],
   );
 
-  const { firstStart, lastEnd } = useMemo(() => {
-    const complete = rows.filter(isComplete);
-    if (complete.length === 0) return { firstStart: undefined, lastEnd: undefined };
-    const starts = complete.map((r) => r.start_time).sort();
-    const ends = complete.map((r) => r.end_time).sort();
-    return { firstStart: starts[0], lastEnd: ends[ends.length - 1] };
+  const firstStart = useMemo(() => {
+    const starts = rows.filter(isComplete).map((r) => r.start_time).sort();
+    return starts[0];
   }, [rows]);
 
-  const bounds = useDayBounds(date, firstStart, lastEnd);
-
-  const donutData: DonutDatum[] = useMemo(() => {
-    const map = new Map<number, DonutDatum>();
-    for (const r of rows) {
-      if (!isComplete(r)) continue;
-      const cat = categories.find((c) => c.id === r.category);
-      if (!cat) continue;
-      const minutes = diffMinutes(r.start_time, r.end_time);
-      const existing = map.get(cat.id);
-      if (existing) existing.minutes += minutes;
-      else map.set(cat.id, { name: cat.name, minutes, color: cat.color });
-    }
-    return [...map.values()].sort((a, b) => b.minutes - a.minutes);
-  }, [rows, categories]);
-
-  const barData: EntryBarDatum[] = useMemo(() => {
-    return rows
-      .filter(isComplete)
-      .map((r) => {
-        const cat = categories.find((c) => c.id === r.category);
-        return {
-          label: r.start_time,
-          fullLabel: `${cat?.name ?? ''} · ${r.start_time}–${r.end_time}`,
-          minutes: diffMinutes(r.start_time, r.end_time),
-          color: cat?.color ?? 'var(--neutral)',
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [rows, categories]);
+  const bounds = useDayBounds(date, firstStart);
 
   const shiftDay = (delta: number) => {
     const d = new Date(date);
@@ -174,38 +152,145 @@ export function DayPage() {
     setDate(d.toISOString().slice(0, 10));
   };
 
-  const hasData = donutData.length > 0;
-
   const jumpToForm = () => {
     rowsEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
+  const filledRows = rows.filter(isComplete);
+
+  const dateBar = (
+    <div className={styles.dateBar}>
+      <button type="button" onClick={() => shiftDay(-1)} aria-label="Предыдущий день">
+        ←
+      </button>
+      <input
+        type="date"
+        value={date}
+        max={todayStr()}
+        onChange={(e) => setDate(e.target.value)}
+        aria-label="Выбор даты"
+      />
+      <button
+        type="button"
+        onClick={() => shiftDay(1)}
+        disabled={!isPast}
+        aria-label="Следующий день"
+      >
+        →
+      </button>
+    </div>
+  );
+
+  // Future day — can't be logged yet.
+  if (isFuture) {
+    return (
+      <div className={styles.page}>
+        {dateBar}
+        <div className={styles.futureBox}>
+          <span className={styles.futureIcon}>🗓️</span>
+          <p className={styles.futureText}>Это будущий день — заполнить пока нельзя.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Read-only view for a past day (until the user taps "Редактировать").
+  if (isPast && !editMode) {
+    const catById = new Map(optionCategories.map((c) => [c.id, c]));
+    return (
+      <div className={styles.page}>
+        {dateBar}
+
+        <div className={styles.readHeader}>
+          <span className={styles.readBadge}>Прошедший день</span>
+          <button type="button" className={styles.editBtn} onClick={() => setEditMode(true)}>
+            Редактировать
+          </button>
+        </div>
+
+        <div className={styles.sleepCard} aria-label="Подъём, отбой, сон">
+          <div className={styles.sleepRow}>
+            <span className={styles.sleepLabel}>🌅 Подъём</span>
+            <span className={styles.sleepValue}>{bounds.wake || '—'}</span>
+          </div>
+          <div className={styles.sleepRow}>
+            <span className={styles.sleepLabel}>🌙 Отбой</span>
+            <span className={styles.sleepValue}>{bounds.sleep || '—'}</span>
+          </div>
+          <div className={`${styles.sleepRow} ${styles.sleepTotal}`}>
+            <span className={styles.sleepLabel}>💤 Сон</span>
+            <span className={styles.sleepValue}>
+              {bounds.sleepMinutes > 0 ? (
+                <>
+                  {formatMinutes(bounds.sleepMinutes)}
+                  {bounds.prevSleep && bounds.wake && (
+                    <span className={styles.sleepRange}> · {bounds.prevSleep}–{bounds.wake}</span>
+                  )}
+                </>
+              ) : (
+                '—'
+              )}
+            </span>
+          </div>
+        </div>
+
+        {filledRows.length === 0 ? (
+          <p className={styles.muted}>За этот день записей нет.</p>
+        ) : (
+          <ul className={styles.readList}>
+            {filledRows.map((r) => {
+              const cat = r.category != null ? catById.get(r.category) : undefined;
+              return (
+                <li
+                  key={r._uid}
+                  className={styles.readItem}
+                  style={{ borderLeftColor: cat?.color ?? 'var(--border)' }}
+                >
+                  <span className={styles.readTime}>
+                    {r.start_time}–{r.end_time}
+                  </span>
+                  <span className={styles.readCat}>
+                    {cat ? `${cat.icon} ${cat.name}` : '—'}
+                  </span>
+                  <span className={styles.readDur}>
+                    {formatMinutes(diffMinutes(r.start_time, r.end_time))}
+                  </span>
+                  {r.note && <span className={styles.readNote}>{r.note}</span>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <p className={styles.total}>
+          Всего за день: <strong>{formatMinutes(totalMinutes)}</strong>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
-      <div className={styles.dateBar}>
-        <button type="button" onClick={() => shiftDay(-1)} aria-label="Предыдущий день">
-          ←
-        </button>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          aria-label="Выбор даты"
-        />
-        <button type="button" onClick={() => shiftDay(1)} aria-label="Следующий день">
-          →
-        </button>
-      </div>
+      {dateBar}
+
+      {isPast && editMode && (
+        <div className={styles.readHeader}>
+          <span className={styles.readBadge}>✏️ Режим редактирования</span>
+          <button type="button" className={styles.editBtn} onClick={() => setEditMode(false)}>
+            ← К просмотру
+          </button>
+        </div>
+      )}
 
       <DayFrame bounds={bounds} />
 
       <section className={styles.rows} aria-label="Интервалы дня">
         {rows.map((row, i) => (
           <IntervalRow
-            key={row.id ?? `new-${i}`}
+            key={row._uid}
             index={i}
             draft={row}
-            categories={categories}
+            categories={optionCategories}
             error={errors.get(i)}
             onChange={handleChange}
             onRemove={handleRemove}
@@ -214,51 +299,9 @@ export function DayPage() {
         <div ref={rowsEndRef} />
       </section>
 
-      <section className={styles.statsSection} aria-label="Статистика дня">
-        <div className={styles.statsHead}>
-          <div className={styles.total}>
-            <span className={styles.totalLabel}>Заполнено за день</span>
-            <strong>{formatMinutes(totalMinutes)}</strong>
-          </div>
-          {hasData && <ChartToggle value={chart} onChange={setChartPref} />}
-        </div>
-
-        {hasData ? (
-          <>
-            <div className={styles.chart}>
-              {chart === 'donut' ? (
-                <CategoryDonut data={donutData} />
-              ) : (
-                <EntryBars data={barData} />
-              )}
-            </div>
-            <ul className={styles.legend}>
-              {donutData.map((d) => {
-                const pct = totalMinutes ? Math.round((d.minutes / totalMinutes) * 100) : 0;
-                return (
-                  <li key={d.name} className={styles.legendRow}>
-                    <span className={styles.legendName}>
-                      <span className={styles.legendDot} style={{ background: d.color }} />
-                      {d.name}
-                    </span>
-                    <div className={styles.legendBar}>
-                      <div
-                        className={styles.legendFill}
-                        style={{ width: `${pct}%`, background: d.color }}
-                      />
-                    </div>
-                    <span className={styles.legendValue}>
-                      {formatMinutes(d.minutes)} · {pct}%
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        ) : (
-          <p className={styles.muted}>Заполни интервалы — здесь появится статистика дня.</p>
-        )}
-      </section>
+      <p className={styles.total}>
+        Заполнено за день: <strong>{formatMinutes(totalMinutes)}</strong>
+      </p>
 
       <button type="button" className={styles.jumpBtn} onClick={jumpToForm}>
         К интервалу

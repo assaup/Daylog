@@ -34,8 +34,7 @@ export function CategoryDonut({ data }: { data: DonutDatum[] }) {
             outerRadius={85}
             paddingAngle={2}
             isAnimationActive={false}
-            onMouseEnter={(_, index) => setActive(index)}
-            onClick={(_, index) => setActive(index)}
+            onClick={(_, index) => setActive((cur) => (cur === index ? null : index))}
           >
             {data.map((d, i) => (
               <Cell

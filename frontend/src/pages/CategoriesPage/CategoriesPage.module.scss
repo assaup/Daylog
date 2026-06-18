@@ -57,13 +57,28 @@
   letter-spacing: 0.04em;
 }
 
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldGrow {
+  flex: 1;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 .icon {
-  width: 48px;
+  width: 52px;
   text-align: center;
 }
 
 .name {
-  flex: 1;
+  width: 100%;
 }
 
 .icon,

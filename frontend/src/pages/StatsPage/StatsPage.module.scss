@@ -13,7 +13,7 @@
 // Prominent period filter (sticky on top while scrolling stats).
 .periodBar {
   position: sticky;
-  top: 0;
+  top: v.$header-h;
   z-index: 5;
   display: flex;
   flex-direction: column;
@@ -33,13 +33,18 @@
 
 .segBtn {
   flex: 1;
-  padding: 10px;
+  padding: 10px 6px;
   background: transparent;
   border: none;
   border-radius: 999px;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+
+  @media (max-width: 360px) {
+    font-size: 12px;
+    padding: 9px 2px;
+  }
 }
 
 .segActive {
@@ -73,6 +78,42 @@
   font-weight: 700;
   font-size: 16px;
   text-transform: capitalize;
+}
+
+.dayInput {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+}
+
+.customRange {
+  display: flex;
+  gap: v.$space-sm;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+  }
 }
 
 .group {

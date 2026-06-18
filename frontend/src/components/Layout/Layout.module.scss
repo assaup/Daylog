@@ -19,7 +19,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: v.$space-md;
+  height: v.$header-h;
+  padding: 0 v.$space-md;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
