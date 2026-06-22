@@ -9,6 +9,7 @@ import { DayPage } from '@/pages/DayPage/DayPage';
 import { LoginPage } from '@/pages/LoginPage/LoginPage';
 import { RegisterPage } from '@/pages/LoginPage/RegisterPage';
 import { StatsPage } from '@/pages/StatsPage/StatsPage';
+import { WorkoutsPage } from '@/pages/WorkoutsPage/WorkoutsPage';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 
@@ -38,6 +39,7 @@ export default function App() {
         }
       >
         <Route path="/" element={<DayPage />} />
+        <Route path="/workouts" element={<WorkoutsPage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
       </Route>

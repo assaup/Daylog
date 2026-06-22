@@ -9,7 +9,7 @@ export function diffMinutes(start: string, end: string): number {
   if (!start || !end) return 0;
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
-  let s = sh * 60 + sm;
+  const s = sh * 60 + sm;
   let e = eh * 60 + em;
   if (e < s) e += 24 * 60;
   return e - s;

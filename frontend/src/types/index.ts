@@ -97,3 +97,91 @@ export interface AuthUser {
   username: string;
   email: string;
 }
+
+// --- Workouts ---
+export type Tracking = 'weight_reps' | 'bodyweight' | 'duration' | 'distance';
+
+export interface Exercise {
+  id: number;
+  name: string;
+  region: string;
+  region_label: string;
+  primary_muscle: string;
+  muscle_label: string;
+  tracking: Tracking;
+  is_archived: boolean;
+  is_default: boolean;
+}
+
+export interface MuscleNode {
+  muscle: string;
+  muscle_label: string;
+}
+
+export interface RegionNode {
+  region: string;
+  region_label: string;
+  color: string;
+  muscles: MuscleNode[];
+}
+
+export interface WorkoutSet {
+  id?: number;
+  order: number;
+  reps: number | null;
+  weight: string | null;
+  duration_seconds: number | null;
+  distance_km: string | null;
+  done: boolean;
+  volume?: number;
+}
+
+export interface WorkoutExercise {
+  id?: number;
+  exercise: number;
+  exercise_detail?: Exercise;
+  order: number;
+  sets: WorkoutSet[];
+}
+
+export interface WorkoutTotals {
+  exercises: number;
+  sets: number;
+  reps: number;
+  volume: number;
+  duration_seconds: number;
+  distance_km: number;
+}
+
+export interface Workout {
+  id: number;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  note: string;
+  duration_minutes: number | null;
+  exercises: WorkoutExercise[];
+  totals: WorkoutTotals;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Payload sent when creating/updating a workout (no server-computed fields). */
+export interface WorkoutInput {
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  note: string;
+  exercises: Array<{
+    exercise: number;
+    order: number;
+    sets: Array<{
+      order: number;
+      reps: number | null;
+      weight: string | null;
+      duration_seconds: number | null;
+      distance_km: string | null;
+      done: boolean;
+    }>;
+  }>;
+}

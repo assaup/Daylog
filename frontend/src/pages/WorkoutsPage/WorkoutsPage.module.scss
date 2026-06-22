@@ -1,0 +1,147 @@
+@use '../../styles/variables' as v;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.newBtn {
+  padding: 10px 16px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: v.$radius-md;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: v.$space-md;
+  padding: v.$space-lg;
+  margin-top: v.$space-lg;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 40px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.list li {
+  display: flex;
+  align-items: stretch;
+  gap: v.$space-sm;
+}
+
+.card {
+  --accent: var(--border);
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-md;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
+  border-radius: v.$radius-md;
+  color: var(--text);
+  text-align: left;
+
+  &:hover {
+    border-color: var(--primary);
+    border-left-color: var(--accent);
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardDate {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.cardDur {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.muscleChip {
+  --chip: var(--border);
+
+  font-size: 12px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--chip) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip) 45%, transparent);
+  border-radius: 999px;
+  color: var(--text);
+}
+
+.cardStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$space-md;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.accentStat {
+  margin-left: auto;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.delete {
+  width: 44px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-md;
+  color: var(--text-muted);
+  font-size: 16px;
+
+  &:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+}

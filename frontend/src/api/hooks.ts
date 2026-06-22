@@ -10,8 +10,12 @@ import type {
   CategoryPreset,
   DayLog,
   EntryDraft,
+  Exercise,
+  RegionNode,
   StatsResponse,
   TimeEntry,
+  Workout,
+  WorkoutInput,
 } from '@/types';
 
 import { api } from './client';
@@ -124,5 +128,56 @@ export function useStats(from: string, to: string, goal = 0) {
     queryFn: async () =>
       (await api.get<StatsResponse>('/stats/', { params: { from, to, goal } })).data,
     placeholderData: keepPreviousData,
+  });
+}
+
+// --- Workouts ---
+export function useExercises() {
+  return useQuery({
+    queryKey: ['exercises'],
+    queryFn: async () => (await api.get<Exercise[]>('/workouts/exercises/')).data,
+    staleTime: Infinity,
+  });
+}
+
+export function useExerciseTaxonomy() {
+  return useQuery({
+    queryKey: ['exercise-taxonomy'],
+    queryFn: async () =>
+      (await api.get<RegionNode[]>('/workouts/exercises/taxonomy/')).data,
+    staleTime: Infinity,
+  });
+}
+
+export function useWorkouts(params?: { from?: string; to?: string }) {
+  return useQuery({
+    queryKey: ['workouts', params ?? {}],
+    queryFn: async () => (await api.get<Workout[]>('/workouts/', { params })).data,
+  });
+}
+
+export function useCreateWorkout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: WorkoutInput) =>
+      (await api.post<Workout>('/workouts/', payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workouts'] }),
+  });
+}
+
+export function useUpdateWorkout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: WorkoutInput & { id: number }) =>
+      (await api.put<Workout>(`/workouts/${id}/`, payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workouts'] }),
+  });
+}
+
+export function useDeleteWorkout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => api.delete(`/workouts/${id}/`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workouts'] }),
   });
 }

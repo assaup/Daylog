@@ -1,0 +1,277 @@
+@use '../../styles/variables' as v;
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: v.$space-md;
+}
+
+.ghost {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.topTitle {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.metaCard {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-md;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+
+  input {
+    margin-left: auto;
+    padding: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.metaLabel {
+  font-weight: 600;
+}
+
+.metaTotal {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  padding-top: v.$space-sm;
+  border-top: 1px solid var(--border);
+
+  strong {
+    margin-left: auto;
+    font-size: 18px;
+    color: var(--primary);
+  }
+}
+
+.noteInput {
+  margin-top: v.$space-xs;
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+}
+
+.exCard {
+  --accent: var(--primary);
+
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: v.$space-md;
+  border-left: 4px solid var(--accent);
+}
+
+.exHead {
+  display: flex;
+  align-items: flex-start;
+  gap: v.$space-sm;
+}
+
+.exTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: auto;
+}
+
+.exName {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.exStat {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.exMuscle {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 3px 8px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.exRemove {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+}
+
+.weightToggle {
+  align-self: flex-start;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.setHeader,
+.setRow {
+  display: grid;
+  gap: 6px;
+  align-items: center;
+}
+
+.setHeader {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 2px 0;
+  text-align: center;
+
+  span:nth-child(2) {
+    text-align: left;
+  }
+}
+
+.setRow input {
+  width: 100%;
+  padding: 8px;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.setDone {
+  opacity: 0.7;
+}
+
+.setNum {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.timeCell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.colon {
+  color: var(--text-muted);
+}
+
+.check {
+  width: 32px;
+  height: 32px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--productive);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.checkOn {
+  background: color-mix(in srgb, var(--productive) 22%, var(--surface-2));
+  border-color: var(--productive);
+}
+
+.setRemove {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.addSet {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.addExercise {
+  padding: 12px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: v.$radius-md;
+  color: var(--primary);
+  font-weight: 600;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+}
+
+.save {
+  margin-top: v.$space-sm;
+  padding: 14px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: v.$radius-md;
+  font-size: 15px;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+// Floating quick-jump to the add-exercise button (mirrors the Day page anchor).
+.jumpBtn {
+  position: fixed;
+  right: 16px;
+  bottom: 88px;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 30%);
+  z-index: 20;
+
+  @include v.tablet {
+    bottom: 24px;
+  }
+}

@@ -7,6 +7,7 @@ import styles from './Layout.module.scss';
 
 const TABS = [
   { to: '/', label: 'День', icon: '📅' },
+  { to: '/workouts', label: 'Тренировки', icon: '🏋️' },
   { to: '/stats', label: 'Статистика', icon: '📊' },
   { to: '/categories', label: 'Категории', icon: '🏷️' },
 ];

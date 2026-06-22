@@ -65,7 +65,7 @@ export function IntervalRow({ index, draft, categories, error, onChange, onRemov
       <input
         className={styles.note}
         type="text"
-        placeholder="заметка (необязательно)"
+        placeholder="описание"
         value={draft.note}
         onChange={(e) => onChange(index, { note: e.target.value })}
         aria-label={`Заметка интервала ${index + 1}`}

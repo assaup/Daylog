@@ -1,0 +1,162 @@
+@use '../../styles/variables' as v;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-sm;
+}
+
+.ghost {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.editBtn {
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: v.$radius-md;
+  font-weight: 600;
+  font-size: 14px;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+  }
+}
+
+.metaCard {
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-md;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+}
+
+.metaLabel {
+  font-weight: 600;
+}
+
+.metaValue {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  text-transform: capitalize;
+}
+
+.metaTotal {
+  padding-top: v.$space-sm;
+  border-top: 1px solid var(--border);
+
+  strong {
+    margin-left: auto;
+    font-size: 18px;
+    color: var(--primary);
+  }
+}
+
+.note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.exCard {
+  --accent: var(--primary);
+
+  @include v.card;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-md;
+  border-left: 4px solid var(--accent);
+}
+
+.exHead {
+  display: flex;
+  align-items: flex-start;
+  gap: v.$space-sm;
+}
+
+.exTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: auto;
+}
+
+.exName {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.exStat {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.exMuscle {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 3px 8px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.setList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setItem {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border-radius: v.$radius-sm;
+}
+
+.setNum {
+  width: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.setVal {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.setDone {
+  color: var(--productive);
+  font-weight: 700;
+}
