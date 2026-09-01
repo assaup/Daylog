@@ -4,6 +4,10 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+# Secrets — never commit any real env file (safe for a public repo). Only *.example is tracked.
+.env
+.env.*
+!.env*.example
 backend/.env
 .env.prod
 backend/staticfiles/

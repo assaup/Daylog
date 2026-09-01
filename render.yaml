@@ -1,0 +1,32 @@
+# Render Blueprint — free-tier backend (Django + gunicorn + WhiteNoise).
+# The database is external (Neon) and the frontend is on Vercel, so only the
+# API service lives here. Deploy: Render Dashboard → New → Blueprint → pick repo.
+#
+# After the first deploy, set the values marked `sync: false` in the dashboard:
+#   DATABASE_URL          — Neon connection string (include ?sslmode=require)
+#   CORS_ALLOWED_ORIGINS  — your Vercel URL, e.g. https://daylog.vercel.app
+#   CSRF_TRUSTED_ORIGINS  — same Vercel URL (for admin over HTTPS), comma-separated
+services:
+  - type: web
+    name: reporting-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerCommand: sh entrypoint.prod.sh
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/docs/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: TIME_ZONE
+        value: Europe/Moscow
+      # RENDER_EXTERNAL_HOSTNAME is injected by Render and auto-trusted in settings.py.
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
