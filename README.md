@@ -133,6 +133,49 @@ Vite проксирует `/api` на `http://localhost:8000` (см. `vite.confi
 
 ---
 
+## Бесплатный деплой (Render + Neon + Vercel)
+
+Полностью бесплатный вариант без своего сервера, банковская карта не нужна. Фронт и
+бэкенд живут на **разных** доменах (у фронта — `VITE_API_BASE` на API, у бэкенда — CORS
+на домен фронта; авторизация на JWT, поэтому CSRF между доменами не мешает).
+
+Конфиги для этого пути: [`render.yaml`](./render.yaml) (бэкенд) и
+[`frontend/vercel.json`](./frontend/vercel.json) (SPA-редирект, чтобы `/workouts` и др.
+не давали 404 при перезагрузке).
+
+**Порядок важен** — каждый следующий шаг использует URL из предыдущего:
+
+1. **База — [Neon](https://neon.tech)** (бесплатный Postgres). Создай проект и скопируй
+   connection string (Pooled), вид:
+   `postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/dbname?sslmode=require`
+
+2. **Бэкенд — [Render](https://render.com)** → New → **Blueprint** → подключи репозиторий,
+   Render подхватит `render.yaml`. Затем в разделе Environment задай:
+   - `DATABASE_URL` — строка из Neon;
+   - `CORS_ALLOWED_ORIGINS` и `CSRF_TRUSTED_ORIGINS` — впишешь после шага 3.
+
+   `SECRET_KEY` сгенерируется сам, а домен Render (`RENDER_EXTERNAL_HOSTNAME`) автоматически
+   добавляется в `ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS` (см. `config/settings.py`). При деплое
+   применяются миграции и собирается статика. URL: `https://reporting-backend.onrender.com`.
+   Суперпользователь: Render → сервис → **Shell** → `python manage.py createsuperuser`.
+
+3. **Фронт — [Vercel](https://vercel.com)** → Add New Project → импорт репо.
+   **Root Directory:** `frontend` (пресет Vite определится сам). Добавь переменную окружения
+   `VITE_API_BASE = https://reporting-backend.onrender.com/api` и задеплой. Получишь
+   `https://<имя>.vercel.app`.
+
+4. **Связать:** впиши финальный Vercel-URL в `CORS_ALLOWED_ORIGINS` и `CSRF_TRUSTED_ORIGINS`
+   на Render (через запятую, со схемой `https://`) — сервис перезапустится.
+
+Нюансы free-tier:
+- Бэкенд Render **засыпает** после 15 мин простоя → первый запрос 30–60 сек (для личного
+  трекера ок). Neon просыпается за ~секунду.
+- `VITE_API_BASE` вшивается в сборку — при смене URL бэкенда пересобери фронт на Vercel.
+- ⚠️ Секреты (`SECRET_KEY`, `DATABASE_URL`) только в переменных окружения платформ, **не в гите** —
+  особенно если делаешь репозиторий публичным.
+
+---
+
 ## Линтеры
 
 Frontend:
