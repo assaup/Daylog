@@ -23,8 +23,12 @@ frontend/dist/
 frontend/vite.config.js
 frontend/vite.config.d.ts
 
-# Editors / OS
+# Editors / OS / local tooling
 .vscode/
 .idea/
+.claude/
 .DS_Store
 Thumbs.db
+
+# Local notes
+PLAN.md

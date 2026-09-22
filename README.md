@@ -1,78 +1,53 @@
-# DayLog — трекер времени и личной эффективности
+# DayLog
 
-Веб-приложение, чтобы записывать, на что уходит день, и анализировать свою
-продуктивность, сон и распределение времени. Mobile-first.
+Трекер дня: записываешь, чем занимался, и видишь, сколько времени ушло на полезное,
+сколько на ерунду и как ты спишь.
 
-🔗 **Живой проект:** https://daylogapp.ru
+**Демо:** https://daylogapp.ru
 
-- **Frontend:** React + TypeScript + Vite, SCSS-модули, Zustand, React Query, Recharts
-- **Backend:** Django + DRF, JWT-аутентификация, PostgreSQL
-- **Инфраструктура:** Docker Compose, в продакшене — Caddy (HTTPS) + gunicorn + WhiteNoise
-- Подробности архитектуры — в [PLAN.md](./PLAN.md)
+## Что умеет
 
-## Возможности
+- **День** — интервалы времени с категорией и заметкой, подъём/отбой и расчёт сна,
+  автосохранение, проверка пересечений. Прошедшие дни открываются только для чтения.
+- **Статистика** — за день, неделю, месяц или произвольный период: полезное/впустую,
+  индекс продуктивности, режим сна, продуктивные часы, тренды, цель и серия дней.
+- **Тренировки** — журнал упражнений с подходами, весом, дистанцией и временем.
+- **Категории** — свои и готовые пресеты, тип (полезное / нейтральное / впустую),
+  архивирование без потери истории.
+- Тёмная и светлая тема, адаптив под телефон, горячие клавиши на десктопе.
 
-- Регистрация / вход (мультиюзер, JWT с авто-рефрешем токена).
-- **Страница «День»** — ввод данных:
-  - свободные интервалы времени с категорией и заметкой; новый интервал появляется
-    автоматически, интервалы сортируются по времени;
-  - подъём / отбой и расчёт сна (отбой прошлого дня → подъём сегодня);
-  - автосохранение, валидация пересечений интервалов;
-  - прошедшие дни — режим **только для чтения** с возможностью включить редактирование;
-    будущие даты заблокированы.
-- **Страница «Статистика»** — аналитика за **день / неделю / месяц / произвольный период**:
-  - KPI: полезное и бесполезное время, индекс продуктивности, режим сна;
-  - графики (круг, столбцы, тренд продуктивности, продуктивные часы дня, структура дней);
-  - **цель** по полезному времени, календарь достижения и серия (streak);
-  - фильтр-фокус по конкретной категории.
-- **Категории:** базовые засеиваются при регистрации, плюс пресеты «в один тап»; свои
-  категории (название, эмодзи-иконка, цвет, тип: полезное / нейтральное / впустую),
-  редактирование с выбором «применить ко всем или только к новым записям»; мягкое
-  удаление (архив) с восстановлением при пересоздании.
-- **Светлая / тёмная тема**, адаптив (нижние табы на мобилке, навигация в шапке на десктопе),
-  доступность (a11y), SEO (мета-теги, Open Graph, sitemap).
+## Стек
 
----
+- **Frontend:** React 18, TypeScript, Vite, SCSS-модули, TanStack Query, Zustand, Recharts
+- **Backend:** Django 5, DRF, SimpleJWT, PostgreSQL, drf-spectacular
+- **Инфраструктура:** Docker Compose, Caddy, gunicorn, WhiteNoise
 
-## Запуск через Docker (рекомендуется)
+## Запуск
 
 ```bash
 docker compose up --build
 ```
 
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000/api
-- Swagger-доки: http://localhost:8000/api/docs/
+- приложение — http://localhost:5173
+- API — http://localhost:8000/api
+- Swagger — http://localhost:8000/api/docs/
 
-Миграции применяются автоматически при старте backend-контейнера.
-Создать суперпользователя для админки:
+Миграции применяются при старте. Админ:
+`docker compose exec backend python manage.py createsuperuser`
 
-```bash
-docker compose exec backend python manage.py createsuperuser
-```
+<details>
+<summary>Без Docker</summary>
 
----
-
-## Локальный запуск без Docker
-
-### Backend
+Нужен PostgreSQL (можно поднять только его: `docker compose up db`).
 
 ```bash
 cd backend
-python -m venv .venv
-# Windows PowerShell:
-.venv\Scripts\Activate.ps1
+python -m venv .venv && .venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env   # отредактируйте DATABASE_URL под свой Postgres
-python manage.py makemigrations
+copy .env.example .env
 python manage.py migrate
 python manage.py runserver
 ```
-
-> Нужен запущенный PostgreSQL и база `timetracker`. Либо поднимите только БД:
-> `docker compose up db`.
-
-### Frontend
 
 ```bash
 cd frontend
@@ -80,142 +55,50 @@ npm install
 npm run dev
 ```
 
-Vite проксирует `/api` на `http://localhost:8000` (см. `vite.config.ts`).
+Vite проксирует `/api` на `localhost:8000`.
+</details>
 
----
+## Деплой
 
-## Деплой на VPS (production)
-
-Прод-конфигурация: бэкенд через **gunicorn** + **whitenoise**, фронт собирается и
-раздаётся через **Caddy**, который также проксирует `/api` на бэкенд и автоматически
-выпускает HTTPS-сертификат для домена.
-
-Файлы: `docker-compose.prod.yml`, `deploy/web.Dockerfile`, `deploy/Caddyfile`,
-`backend/entrypoint.prod.sh`, `.env.prod.example`.
-
-### Шаги
-
-1. **Арендуй VPS** (например Hetzner CX22 или DigitalOcean, Ubuntu 22.04+) и наведи
-   свой домен `A`-записью на IP сервера.
-
-2. **Установи Docker** на сервере:
-   ```bash
-   curl -fsSL https://get.docker.com | sh
-   ```
-
-3. **Скопируй проект** на сервер (через `git clone` своего репозитория).
-
-4. **Создай `.env.prod`** из примера и заполни реальными значениями
-   (домен, длинный `SECRET_KEY`, надёжный пароль БД):
-   ```bash
-   cp .env.prod.example .env.prod
-   nano .env.prod
-   ```
-
-5. **Открой порты** 80 и 443 в фаерволе сервера.
-
-6. **Запусти:**
-   ```bash
-   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
-   ```
-   Флаг `--env-file .env.prod` обязателен — из него подставляются `${DOMAIN}` и
-   параметры БД в compose-файл.
-
-7. Создай суперпользователя для админки:
-   ```bash
-   docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
-   ```
-
-Готово — открой `https://твой-домен`. Caddy сам получит сертификат Let's Encrypt.
-
-> Локально прод-сборку можно проверить, поставив `DOMAIN=localhost` в `.env.prod`
-> (тогда сайт поднимется на `http://localhost` без HTTPS).
-
----
-
-## Бесплатный деплой (Render + Neon + Vercel)
-
-Полностью бесплатный вариант без своего сервера, банковская карта не нужна. Фронт и
-бэкенд живут на **разных** доменах (у фронта — `VITE_API_BASE` на API, у бэкенда — CORS
-на домен фронта; авторизация на JWT, поэтому CSRF между доменами не мешает).
-
-Конфиги для этого пути: [`render.yaml`](./render.yaml) (бэкенд) и
-[`frontend/vercel.json`](./frontend/vercel.json) (SPA-редирект, чтобы `/workouts` и др.
-не давали 404 при перезагрузке).
-
-**Порядок важен** — каждый следующий шаг использует URL из предыдущего:
-
-1. **База — [Neon](https://neon.tech)** (бесплатный Postgres). Создай проект и скопируй
-   connection string (Pooled), вид:
-   `postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/dbname?sslmode=require`
-
-2. **Бэкенд — [Render](https://render.com)** → New → **Blueprint** → подключи репозиторий,
-   Render подхватит `render.yaml`. Затем в разделе Environment задай:
-   - `DATABASE_URL` — строка из Neon;
-   - `CORS_ALLOWED_ORIGINS` и `CSRF_TRUSTED_ORIGINS` — впишешь после шага 3.
-
-   `SECRET_KEY` сгенерируется сам, а домен Render (`RENDER_EXTERNAL_HOSTNAME`) автоматически
-   добавляется в `ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS` (см. `config/settings.py`). При деплое
-   применяются миграции и собирается статика. URL: `https://reporting-backend.onrender.com`.
-   Суперпользователь: Render → сервис → **Shell** → `python manage.py createsuperuser`.
-
-3. **Фронт — [Vercel](https://vercel.com)** → Add New Project → импорт репо.
-   **Root Directory:** `frontend` (пресет Vite определится сам). Добавь переменную окружения
-   `VITE_API_BASE = https://reporting-backend.onrender.com/api` и задеплой. Получишь
-   `https://<имя>.vercel.app`.
-
-4. **Связать:** впиши финальный Vercel-URL в `CORS_ALLOWED_ORIGINS` и `CSRF_TRUSTED_ORIGINS`
-   на Render (через запятую, со схемой `https://`) — сервис перезапустится.
-
-Нюансы free-tier:
-- Бэкенд Render **засыпает** после 15 мин простоя → первый запрос 30–60 сек (для личного
-  трекера ок). Neon просыпается за ~секунду.
-- `VITE_API_BASE` вшивается в сборку — при смене URL бэкенда пересобери фронт на Vercel.
-- ⚠️ Секреты (`SECRET_KEY`, `DATABASE_URL`) только в переменных окружения платформ, **не в гите** —
-  особенно если делаешь репозиторий публичным.
-
----
-
-## Линтеры
-
-Frontend:
+**VPS.** `docker-compose.prod.yml` поднимает Postgres, бэкенд на gunicorn и Caddy, который
+раздаёт собранный фронт, проксирует `/api` и сам выпускает HTTPS-сертификат.
 
 ```bash
-cd frontend
-npm run lint          # ESLint + jsx-a11y
-npm run lint:style    # stylelint (SCSS)
-npm run format        # prettier
+cp .env.prod.example .env.prod   # домен, SECRET_KEY, пароль БД
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 ```
 
-Backend:
+**Бесплатно: Render + Vercel + Neon.**
 
-```bash
-cd backend
-ruff check .
-ruff format .
-```
+1. Neon — создать базу, взять connection string.
+2. Render — New → Blueprint из этого репозитория (`render.yaml`), указать `DATABASE_URL`.
+3. Vercel — импорт репозитория, Root Directory `frontend`,
+   `VITE_API_BASE=https://<render-app>.onrender.com/api`.
+4. На Render прописать домен Vercel в `CORS_ALLOWED_ORIGINS` и `CSRF_TRUSTED_ORIGINS`.
 
----
+Оба сервиса пересобираются сами при пуше в `main`. Бесплатный Render засыпает после
+15 минут простоя, первый запрос после этого идёт около минуты.
 
 ## Структура
 
 ```
-reporting-project/
-├── docker-compose.yml
-├── PLAN.md                # детальный план/архитектура
-├── backend/               # Django + DRF
-│   ├── config/            # settings, urls
-│   └── apps/
-│       ├── accounts/      # auth, регистрация, сид категорий
-│       ├── categories/    # модель + CRUD
-│       ├── entries/       # интервалы времени + bulk-сохранение
-│       └── stats/         # агрегаты для графиков
-└── frontend/              # React + Vite
-    └── src/
-        ├── api/           # axios (JWT-интерсепторы) + react-query хуки
-        ├── components/    # Layout, IntervalRow, DayBounds, GoalCalendar, charts, Loader
-        ├── pages/         # Day, Stats, Categories, Login/Register
-        ├── store/         # zustand (auth, тема)
-        ├── styles/        # глобальный scss + переменные (светлая/тёмная тема)
-        └── utils/         # работа со временем и валидация интервалов
+backend/
+  apps/          accounts, categories, entries, stats, workouts
+  config/        настройки Django, урлы
+frontend/src/
+  api/           axios-клиент и хуки React Query
+  components/    общие компоненты (layout, графики, строки интервалов)
+  pages/         День, Статистика, Тренировки, Категории, вход
+  store/         Zustand: авторизация, тема
+  styles/        токены и глобальные стили
+deploy/          Caddy и Dockerfile для прод-сборки фронта
+```
+
+## Проверки
+
+```bash
+cd frontend
+npm run lint         # ESLint
+npm run lint:style   # stylelint
+npm run build        # tsc + сборка
 ```
