@@ -3,135 +3,207 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: v.$space-sm;
+  gap: v.$space-md;
 }
 
-.muted {
+.eyebrow {
+  @include v.eyebrow;
+}
+
+.empty {
+  margin: 0;
+  padding: 40px v.$space-md;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: v.$radius-md;
   color: var(--text-muted);
+  text-align: center;
 }
 
+// --- Date toolbar ---
 .dateBar {
   position: sticky;
   top: v.$header-h;
   z-index: 8;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: v.$space-sm;
-  padding: v.$space-sm 0;
-  margin-bottom: v.$space-xs;
-  background: var(--bg);
+  gap: 12px;
+  margin: -#{v.$space-md} -#{v.$space-md} 0;
+  padding: 10px v.$space-md;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+
+  @include v.desktop {
+    position: static;
+    margin: 0;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+  }
+}
+
+.dateNav {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
 
   button {
-    width: 40px;
-    height: 40px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: v.$radius-sm;
-    color: var(--text);
-    font-size: 18px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    &:hover:enabled {
+      background: var(--hover);
+      color: var(--text);
+    }
   }
 
   input {
-    padding: 8px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: v.$radius-sm;
+    height: 34px;
+    padding: 0 10px;
+    background: transparent;
+    border: none;
+    border-inline: 1px solid var(--border);
+    border-radius: 0;
     color: var(--text);
+    font-size: 13px;
+
+    &:focus {
+      box-shadow: none;
+      background: var(--hover);
+    }
+  }
+}
+
+.dateLabel {
+  display: none;
+
+  @include v.tablet {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
+  }
+}
+
+.todayBtn {
+  margin-left: auto;
+  height: 30px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-sm;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+
+  &:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+  }
+}
+
+// --- Two-column layout ---
+// Mobile: sleep frame → intervals → summary. Desktop: intervals | sticky aside.
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+
+  @include v.desktop {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: v.$space-lg;
+  }
+
+  @include v.wide {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+
+.primary {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+
+  @include v.desktop {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+.aside {
+  display: contents;
+
+  @include v.desktop {
+    position: sticky;
+    top: calc(#{v.$header-h} + #{v.$space-lg});
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-md;
+  }
+}
+
+.frameSlot {
+  order: 0;
+}
+
+.summarySlot {
+  order: 2;
+}
+
+.listHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.listTotal {
+  font-size: 13px;
+  color: var(--text-muted);
+
+  strong {
+    @include v.mono;
+
+    margin-left: 4px;
+    color: var(--text);
+    font-weight: 600;
   }
 }
 
 .rows {
   display: flex;
   flex-direction: column;
-  gap: v.$space-sm;
+  gap: 6px;
 }
 
-.statsSection {
-  @include v.card;
-
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-md;
-  padding: v.$space-md;
-  margin-top: v.$space-xs;
-}
-
-.statsHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: v.$space-sm;
-  flex-wrap: wrap;
-}
-
-.total {
-  margin: v.$space-sm 0 0;
+.saveHint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-faint);
   text-align: center;
-  color: var(--text-muted);
-
-  strong {
-    color: var(--text);
-  }
-}
-
-.chart {
-  min-height: 220px;
-}
-
-// Labelled breakdown under the chart — what each colour means.
-.legend {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-sm;
-}
-
-.legendRow {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px;
-
-  @include v.tablet {
-    grid-template-columns: 150px 1fr 120px;
-    align-items: center;
-    gap: v.$space-sm;
-  }
-}
-
-.legendName {
-  font-size: 14px;
-}
-
-.legendDot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  margin-right: 6px;
-  vertical-align: middle;
-}
-
-.legendBar {
-  height: 10px;
-  background: var(--surface-2);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.legendFill {
-  height: 100%;
-}
-
-.legendValue {
-  font-size: 13px;
-  color: var(--text-muted);
-
-  @include v.tablet {
-    text-align: right;
-  }
 }
 
 // --- Read-only view of a past day ---
@@ -140,37 +212,44 @@
   align-items: center;
   justify-content: space-between;
   gap: v.$space-sm;
+  padding: 8px 8px 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-md;
 }
 
 .readBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   color: var(--text-muted);
-  padding: 4px 10px;
-  background: var(--surface-2);
-  border-radius: 999px;
 }
 
 .editBtn {
-  padding: 8px 16px;
-  background: transparent;
-  color: var(--primary);
-  border: 1px solid var(--primary);
-  border-radius: v.$radius-md;
-  font-weight: 600;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: v.$radius-sm;
+  font-weight: 500;
+  font-size: 13px;
 
   &:hover {
-    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    filter: brightness(1.1);
   }
 }
 
 // Sleep / wake summary card (read-only past day).
 .sleepCard {
+  @include v.card;
+
   display: flex;
   flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: v.$radius-md;
   overflow: hidden;
 }
 
@@ -179,7 +258,7 @@
   align-items: center;
   justify-content: space-between;
   gap: v.$space-md;
-  padding: v.$space-sm v.$space-md;
+  padding: 12px v.$space-md;
 
   & + & {
     border-top: 1px solid var(--border);
@@ -187,24 +266,24 @@
 }
 
 .sleepLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-muted);
 }
 
 .sleepValue {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  @include v.mono;
+
+  font-weight: 500;
 }
 
-.sleepTotal {
-  background: var(--surface-2);
-
-  .sleepValue {
-    color: var(--primary);
-  }
+.sleepTotal .sleepValue {
+  color: var(--primary);
 }
 
 .sleepRange {
-  color: var(--text-muted);
+  color: var(--text-faint);
   font-weight: 400;
 }
 
@@ -213,15 +292,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: v.$space-sm;
-  padding: v.$space-lg;
-  margin-top: v.$space-lg;
+  gap: 12px;
+  padding: 64px v.$space-lg;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: v.$radius-md;
   color: var(--text-muted);
   text-align: center;
 }
 
 .futureIcon {
-  font-size: 40px;
+  color: var(--text-faint);
 }
 
 .futureText {
@@ -229,63 +310,92 @@
 }
 
 .readList {
+  @include v.card;
+
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-sm;
+  overflow: hidden;
 }
 
 .readItem {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
   align-items: center;
   gap: v.$space-md;
-  flex-wrap: wrap;
-  padding: v.$space-md;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 5px solid var(--border);
-  border-radius: v.$radius-md;
+  padding: 12px v.$space-md 12px 20px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    background: var(--cat);
+    border-radius: 2px;
+  }
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+
+  &:hover {
+    background: var(--hover);
+  }
 }
 
 .readTime {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  @include v.mono;
+
+  font-size: 13px;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
 .readCat {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-weight: 500;
 }
 
 .readDur {
-  color: var(--text-muted);
+  @include v.mono;
+
+  font-size: 13px;
   white-space: nowrap;
 }
 
 .readNote {
-  width: 100%;
-  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text-muted);
 }
 
-// Floating quick-jump back to the interval form.
+// Floating quick-jump back to the interval form (mobile only).
 .jumpBtn {
   position: fixed;
   right: 16px;
-  bottom: 88px; // above the mobile tab bar
-  padding: 10px 16px;
+  bottom: 84px; // above the mobile tab bar
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
   background: var(--primary);
   color: var(--primary-contrast);
   border: none;
   border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 30%);
-  z-index: 20;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
 
-  @include v.tablet {
-    bottom: 24px;
+  @include v.desktop {
+    display: none;
   }
 }

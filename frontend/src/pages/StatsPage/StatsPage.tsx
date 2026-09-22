@@ -11,6 +11,20 @@ import {
   startOfWeek,
 } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import {
+  BedDouble,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Flame,
+  Moon,
+  ScanSearch,
+  Sunrise,
+  Target,
+  Trash2,
+  TrendingUp,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   Bar,
@@ -72,7 +86,7 @@ function rangeLabel(period: Period, from: Date, to: Date): string {
 const fullDate = (d: string) => format(parseISO(d), 'd MMMM yyyy', { locale: ru });
 
 // Readable axis ticks (default recharts grey is too faint, esp. in dark theme).
-const AXIS_TICK = { fill: 'var(--text-muted)', fontSize: 12 };
+const AXIS_TICK = { fill: 'var(--text-muted)', fontSize: 11 };
 const AXIS_STROKE = 'var(--border)';
 
 /** Table breakdown of one day, shown below the "structure of days" chart. */
@@ -188,8 +202,7 @@ export function StatsPage() {
     }));
   }, [focusCat, data]);
 
-  const focusColor =
-    categories.find((c) => c.name === focusCat)?.color ?? 'var(--primary)';
+  const focusColor = categories.find((c) => c.name === focusCat)?.color ?? 'var(--primary)';
   const focusTotal = focusData.reduce((s, d) => s + d.minutes, 0);
   const focusBarData: EntryBarDatum[] = focusData.map((d) => ({
     label: String(Number(d.date.slice(8))),
@@ -241,9 +254,10 @@ export function StatsPage() {
   const { totals } = data;
   const isDay = period === 'day';
   // The streak is "current, up to today" — only meaningful for the current period.
-  const showStreak =
-    period === 'day' ? dayDate === todayIso : period !== 'custom' && offset === 0;
-  const productiveShare = totals.minutes ? Math.round((totals.productive / totals.minutes) * 100) : 0;
+  const showStreak = period === 'day' ? dayDate === todayIso : period !== 'custom' && offset === 0;
+  const productiveShare = totals.minutes
+    ? Math.round((totals.productive / totals.minutes) * 100)
+    : 0;
   const wasteShare = totals.minutes ? Math.round((totals.waste / totals.minutes) * 100) : 0;
   const avgProductivePerDay = totals.filled_days
     ? Math.round(totals.productive / totals.filled_days)
@@ -261,8 +275,7 @@ export function StatsPage() {
 
   // Whole-band hover/click -> the active index, for the fixed info below a chart.
   const picker =
-    (setter: (i: number | null) => void) =>
-    (s: { activeTooltipIndex?: number | null } | null) => {
+    (setter: (i: number | null) => void) => (s: { activeTooltipIndex?: number | null } | null) => {
       if (s && s.activeTooltipIndex != null) setter(s.activeTooltipIndex);
     };
 
@@ -310,7 +323,7 @@ export function StatsPage() {
         {period === 'day' && (
           <div className={styles.nav}>
             <button type="button" onClick={() => shiftDayDate(-1)} aria-label="Предыдущий день">
-              ←
+              <ChevronLeft size={16} />
             </button>
             <input
               className={styles.dayInput}
@@ -326,15 +339,19 @@ export function StatsPage() {
               disabled={dayDate >= todayIso}
               aria-label="Следующий день"
             >
-              →
+              <ChevronRight size={16} />
             </button>
           </div>
         )}
 
         {(period === 'week' || period === 'month') && (
           <div className={styles.nav}>
-            <button type="button" onClick={() => setOffset((o) => o + 1)} aria-label="Предыдущий период">
-              ←
+            <button
+              type="button"
+              onClick={() => setOffset((o) => o + 1)}
+              aria-label="Предыдущий период"
+            >
+              <ChevronLeft size={16} />
             </button>
             <span className={styles.navLabel}>{rangeLabel(period, fromDate, toDate)}</span>
             <button
@@ -343,7 +360,7 @@ export function StatsPage() {
               disabled={offset === 0}
               aria-label="Следующий период"
             >
-              →
+              <ChevronRight size={16} />
             </button>
           </div>
         )}
@@ -353,12 +370,16 @@ export function StatsPage() {
         <h2 className={styles.groupTitle}>Распределение времени</h2>
         <div className={styles.kpis}>
           <article className={`${styles.kpi} ${styles.kpiGood}`}>
-            <span className={styles.kpiLabel}>✅ Полезное</span>
+            <span className={styles.kpiLabel}>
+              <CheckCircle2 size={14} aria-hidden="true" /> Полезное
+            </span>
             <strong className={styles.kpiBig}>{formatMinutes(totals.productive)}</strong>
             <span className={styles.kpiHint}>{productiveShare}% от отмеченного</span>
           </article>
           <article className={`${styles.kpi} ${styles.kpiBad}`}>
-            <span className={styles.kpiLabel}>🗑 Пожиратели</span>
+            <span className={styles.kpiLabel}>
+              <Trash2 size={14} aria-hidden="true" /> Пожиратели
+            </span>
             <strong className={styles.kpiBig}>{formatMinutes(totals.waste)}</strong>
             <span className={styles.kpiHint}>{wasteShare}% от отмеченного</span>
           </article>
@@ -383,15 +404,23 @@ export function StatsPage() {
         <h2 className={styles.groupTitle}>Режим и сон</h2>
         <div className={styles.kpis}>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>🌅 {isDay ? 'Время подъёма' : 'Среднее время подъёма'}</span>
+            <span className={styles.kpiLabel}>
+              <Sunrise size={14} aria-hidden="true" />{' '}
+              {isDay ? 'Время подъёма' : 'Среднее время подъёма'}
+            </span>
             <strong>{totals.avg_wake_time ?? '—'}</strong>
           </article>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>🌙 {isDay ? 'Время отбоя' : 'Среднее время отбоя'}</span>
+            <span className={styles.kpiLabel}>
+              <Moon size={14} aria-hidden="true" /> {isDay ? 'Время отбоя' : 'Среднее время отбоя'}
+            </span>
             <strong>{totals.avg_sleep_time ?? '—'}</strong>
           </article>
           <article className={styles.kpi}>
-            <span className={styles.kpiLabel}>💤 {isDay ? 'Часов сна' : 'Часов сна в среднем'}</span>
+            <span className={styles.kpiLabel}>
+              <BedDouble size={14} aria-hidden="true" />{' '}
+              {isDay ? 'Часов сна' : 'Часов сна в среднем'}
+            </span>
             <strong>
               {totals.avg_sleep_minutes != null ? formatMinutes(totals.avg_sleep_minutes) : '—'}
             </strong>
@@ -401,7 +430,9 @@ export function StatsPage() {
 
       <section className={styles.card}>
         <div className={styles.goalHead}>
-          <h2 className={styles.h2}>🎯 Цель по полезному времени</h2>
+          <h2 className={styles.h2}>
+            <Target size={15} aria-hidden="true" /> Цель по полезному времени
+          </h2>
           <label className={styles.goalInput}>
             <input
               type="number"
@@ -422,14 +453,16 @@ export function StatsPage() {
               <strong>
                 {isDay
                   ? totals.goal_days > 0
-                    ? 'Выполнена ✓'
+                    ? 'Выполнена'
                     : 'Не выполнена'
                   : `${totals.goal_days} из ${data.trend.length} дн.`}
               </strong>
             </div>
             {showStreak && (
               <div className={styles.kpi}>
-                <span className={styles.kpiLabel}>🔥 Текущий стрик</span>
+                <span className={styles.kpiLabel}>
+                  <Flame size={14} aria-hidden="true" /> Текущий стрик
+                </span>
                 <strong>{totals.current_streak} дн.</strong>
               </div>
             )}
@@ -448,58 +481,65 @@ export function StatsPage() {
       </section>
 
       {!isDay && (
-      <section className={styles.card}>
-        <h2 className={styles.h2}>📈 Тренд продуктивности · {rangeLabel(period, fromDate, toDate)}</h2>
-        <p className={styles.caption}>
-          По дням за период. % = доля полезного времени от всего отмеченного за день.
-        </p>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart
-            data={data.trend}
-            onMouseMove={picker(setTrendSel)}
-            onClick={picker(setTrendSel)}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={dayTick}
-              tick={AXIS_TICK}
-              stroke={AXIS_STROKE}
-              minTickGap={8}
-            />
-            <YAxis
-              domain={[0, 100]}
-              tickFormatter={(v: number) => `${v}%`}
-              tick={AXIS_TICK}
-              stroke={AXIS_STROKE}
-            />
-            <Line
-              type="monotone"
-              dataKey="index"
-              stroke="var(--productive)"
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className={styles.info} aria-live="polite">
-          {trendSel != null && data.trend[trendSel] ? (
-            <>
-              <span className={styles.infoName}>{fullDate(String(data.trend[trendSel].date))}</span>
-              <span className={styles.infoValue}>
-                {data.trend[trendSel].index}% · {formatMinutes(data.trend[trendSel].productive)}
-              </span>
-            </>
-          ) : (
-            <span className={styles.muted}>Наведи или нажми на день</span>
-          )}
-        </div>
-      </section>
+        <section className={styles.card}>
+          <h2 className={styles.h2}>
+            <TrendingUp size={15} aria-hidden="true" /> Тренд продуктивности
+            <span className={styles.h2Meta}>{rangeLabel(period, fromDate, toDate)}</span>
+          </h2>
+          <p className={styles.caption}>
+            По дням за период. % = доля полезного времени от всего отмеченного за день.
+          </p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart
+              data={data.trend}
+              onMouseMove={picker(setTrendSel)}
+              onClick={picker(setTrendSel)}
+            >
+              <CartesianGrid vertical={false} stroke="var(--border)" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={dayTick}
+                tick={AXIS_TICK}
+                stroke={AXIS_STROKE}
+                minTickGap={8}
+              />
+              <YAxis
+                domain={[0, 100]}
+                tickFormatter={(v: number) => `${v}%`}
+                tick={AXIS_TICK}
+                stroke={AXIS_STROKE}
+              />
+              <Line
+                type="monotone"
+                dataKey="index"
+                stroke="var(--productive)"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          <div className={styles.info} aria-live="polite">
+            {trendSel != null && data.trend[trendSel] ? (
+              <>
+                <span className={styles.infoName}>
+                  {fullDate(String(data.trend[trendSel].date))}
+                </span>
+                <span className={styles.infoValue}>
+                  {data.trend[trendSel].index}% · {formatMinutes(data.trend[trendSel].productive)}
+                </span>
+              </>
+            ) : (
+              <span className={styles.muted}>Наведи или нажми на день</span>
+            )}
+          </div>
+        </section>
       )}
 
       <section className={styles.card}>
-        <h2 className={styles.h2}>⏰ Продуктивные часы дня</h2>
+        <h2 className={styles.h2}>
+          <Clock size={15} aria-hidden="true" /> Продуктивные часы дня
+        </h2>
         <p className={styles.caption}>
           В среднем за день: сколько минут ты продуктивен в каждый час суток (0–23).
         </p>
@@ -509,7 +549,7 @@ export function StatsPage() {
             onMouseMove={picker(setHoursSel)}
             onClick={picker(setHoursSel)}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <CartesianGrid vertical={false} stroke="var(--border)" />
             <XAxis
               dataKey="hour"
               tickFormatter={(h: number) => `${h}`}
@@ -550,82 +590,87 @@ export function StatsPage() {
       </section>
 
       {!isDay && (
-      <section className={styles.card}>
-        <div className={styles.goalHead}>
-          <h2 className={styles.h2}>🔍 Фокус по категории</h2>
-          <select
-            className={styles.focusSelect}
-            value={focusCat}
-            onChange={(e) => setFocusCat(e.target.value)}
-            aria-label="Выбор категории для фокуса"
-          >
-            <option value="">— выбери категорию —</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.icon} {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        {focusCat ? (
-          <>
+        <section className={styles.card}>
+          <div className={styles.goalHead}>
+            <h2 className={styles.h2}>
+              <ScanSearch size={15} aria-hidden="true" /> Фокус по категории
+            </h2>
+            <select
+              className={styles.focusSelect}
+              value={focusCat}
+              onChange={(e) => setFocusCat(e.target.value)}
+              aria-label="Выбор категории для фокуса"
+            >
+              <option value="">— выбери категорию —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.name}>
+                  {c.icon} {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {focusCat ? (
+            <>
+              <p className={styles.muted}>
+                Всего «{focusCat}»: <strong>{formatMinutes(focusTotal)}</strong> за период
+              </p>
+              <EntryBars data={focusBarData} />
+            </>
+          ) : (
             <p className={styles.muted}>
-              Всего «{focusCat}»: <strong>{formatMinutes(focusTotal)}</strong> за период
+              Выбери категорию (учёба, спорт…), чтобы увидеть, сколько времени ты уделял ей по дням.
             </p>
-            <EntryBars data={focusBarData} />
-          </>
-        ) : (
-          <p className={styles.muted}>
-            Выбери категорию (учёба, спорт…), чтобы увидеть, сколько времени ты уделял ей по дням.
-          </p>
-        )}
-      </section>
+          )}
+        </section>
       )}
 
       {!isDay && (
-      <section className={styles.card}>
-        <h2 className={styles.h2}>Структура дней · {rangeLabel(period, fromDate, toDate)}</h2>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart
-            data={data.by_day}
-            onMouseMove={picker(setDaySel)}
-            onClick={picker(setDaySel)}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={dayTick}
-              tick={AXIS_TICK}
-              stroke={AXIS_STROKE}
-              minTickGap={6}
-            />
-            <YAxis
-              tickFormatter={(m: number) => `${Math.round(m / 60)}ч`}
-              tick={AXIS_TICK}
-              stroke={AXIS_STROKE}
-            />
-            <Legend />
-            {categoryNames.map((name) => (
-              <Bar
-                key={name}
-                dataKey={name}
-                stackId="day"
-                fill={colorByName[name] ?? 'var(--neutral)'}
-                maxBarSize={48}
-                isAnimationActive={false}
+        <section className={`${styles.card} ${styles.wide}`}>
+          <h2 className={styles.h2}>
+            Структура дней
+            <span className={styles.h2Meta}>{rangeLabel(period, fromDate, toDate)}</span>
+          </h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart
+              data={data.by_day}
+              onMouseMove={picker(setDaySel)}
+              onClick={picker(setDaySel)}
+            >
+              <CartesianGrid vertical={false} stroke="var(--border)" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={dayTick}
+                tick={AXIS_TICK}
+                stroke={AXIS_STROKE}
+                minTickGap={6}
               />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-        {daySel != null && data.by_day[daySel] ? (
-          <DayBreakdown day={data.by_day[daySel]} colorByName={colorByName} />
-        ) : (
-          <p className={styles.muted}>Наведи или нажми на день, чтобы увидеть разбивку</p>
-        )}
-      </section>
+              <YAxis
+                tickFormatter={(m: number) => `${Math.round(m / 60)}ч`}
+                tick={AXIS_TICK}
+                stroke={AXIS_STROKE}
+              />
+              <Legend />
+              {categoryNames.map((name) => (
+                <Bar
+                  key={name}
+                  dataKey={name}
+                  stackId="day"
+                  fill={colorByName[name] ?? 'var(--neutral)'}
+                  maxBarSize={48}
+                  isAnimationActive={false}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+          {daySel != null && data.by_day[daySel] ? (
+            <DayBreakdown day={data.by_day[daySel]} colorByName={colorByName} />
+          ) : (
+            <p className={styles.muted}>Наведи или нажми на день, чтобы увидеть разбивку</p>
+          )}
+        </section>
       )}
 
-      <section className={styles.card}>
+      <section className={`${styles.card} ${styles.wide}`}>
         <div className={styles.goalHead}>
           <h2 className={styles.h2}>По категориям</h2>
           <ChartToggle value={catChart} onChange={setCatChartPref} />

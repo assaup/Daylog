@@ -9,6 +9,7 @@
   justify-content: center;
   padding: 0;
   background: rgb(0 0 0 / 55%);
+  backdrop-filter: blur(4px);
 
   @include v.tablet {
     align-items: center;
@@ -31,6 +32,8 @@
   @include v.tablet {
     border-radius: v.$radius-lg;
   }
+
+  box-shadow: var(--shadow);
 }
 
 .head {
@@ -45,6 +48,8 @@
 }
 
 .close {
+  display: grid;
+  place-items: center;
   width: 32px;
   height: 32px;
   background: transparent;

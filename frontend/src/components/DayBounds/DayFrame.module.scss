@@ -5,8 +5,14 @@
 
   display: flex;
   flex-direction: column;
-  gap: v.$space-sm;
-  padding: v.$space-md;
+  gap: 10px;
+  padding: 18px;
+}
+
+.title {
+  @include v.eyebrow;
+
+  margin-bottom: 4px;
 }
 
 .field {
@@ -15,13 +21,16 @@
   gap: v.$space-sm;
 
   input {
+    @include v.mono;
+
     margin-left: auto;
-    padding: 10px;
+    height: 32px;
+    padding: 0 8px;
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: v.$radius-sm;
     color: var(--text);
-    font-variant-numeric: tabular-nums;
+    font-size: 13px;
   }
 }
 
@@ -30,29 +39,40 @@
 }
 
 .label {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+
+  svg {
+    color: var(--text-faint);
+  }
 }
 
 .sleep {
   display: flex;
   align-items: center;
   gap: v.$space-sm;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 
   strong {
+    @include v.mono;
+
     margin-left: auto;
-    font-size: 18px;
+    font-size: 15px;
+    font-weight: 600;
     color: var(--primary);
   }
 }
 
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: v.$space-xs 0;
-}
-
 .error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--danger);
 }

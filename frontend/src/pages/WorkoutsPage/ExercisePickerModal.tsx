@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ChevronLeft, X } from 'lucide-react';
 
 import { useExerciseTaxonomy, useExercises } from '@/api/hooks';
 import type { Exercise } from '@/types';
@@ -27,9 +28,7 @@ export function ExercisePickerModal({ onPick, onClose }: Props) {
       return exercises.filter((e) => e.name.toLowerCase().includes(query));
     }
     if (!region) return [];
-    return exercises.filter(
-      (e) => e.region === region && (!muscle || e.primary_muscle === muscle),
-    );
+    return exercises.filter((e) => e.region === region && (!muscle || e.primary_muscle === muscle));
   }, [exercises, query, region, muscle]);
 
   const pickRegion = (r: string) => {
@@ -43,22 +42,12 @@ export function ExercisePickerModal({ onPick, onClose }: Props) {
   };
 
   return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Выбор упражнения"
-    >
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Выбор упражнения">
       <div className={styles.modal}>
         <div className={styles.head}>
           <h2 className={styles.title}>Упражнение</h2>
-          <button
-            type="button"
-            className={styles.close}
-            onClick={onClose}
-            aria-label="Закрыть"
-          >
-            ✕
+          <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
+            <X size={16} />
           </button>
         </div>
 
@@ -67,7 +56,7 @@ export function ExercisePickerModal({ onPick, onClose }: Props) {
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍 Поиск упражнения"
+          placeholder="Поиск упражнения"
           aria-label="Поиск упражнения"
         />
 
@@ -77,7 +66,7 @@ export function ExercisePickerModal({ onPick, onClose }: Props) {
             {region && (
               <div className={styles.crumbs}>
                 <button type="button" className={styles.backBtn} onClick={back}>
-                  ← Назад
+                  <ChevronLeft size={15} aria-hidden="true" /> Назад
                 </button>
                 <span className={styles.crumbText}>
                   {activeRegion?.region_label}
@@ -111,9 +100,7 @@ export function ExercisePickerModal({ onPick, onClose }: Props) {
                   <button
                     key={m.muscle}
                     type="button"
-                    className={`${styles.chip} ${
-                      muscle === m.muscle ? styles.chipActive : ''
-                    }`}
+                    className={`${styles.chip} ${muscle === m.muscle ? styles.chipActive : ''}`}
                     style={{ '--accent': activeRegion.color } as React.CSSProperties}
                     onClick={() => setMuscle(muscle === m.muscle ? null : m.muscle)}
                   >
@@ -133,11 +120,7 @@ export function ExercisePickerModal({ onPick, onClose }: Props) {
             ) : (
               visible.map((e) => (
                 <li key={e.id}>
-                  <button
-                    type="button"
-                    className={styles.item}
-                    onClick={() => onPick(e)}
-                  >
+                  <button type="button" className={styles.item} onClick={() => onPick(e)}>
                     <span className={styles.itemName}>{e.name}</span>
                     <span className={styles.itemMuscle}>{e.muscle_label}</span>
                   </button>

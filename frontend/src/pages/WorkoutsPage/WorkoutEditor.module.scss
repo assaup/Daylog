@@ -3,7 +3,14 @@
 .editor {
   display: flex;
   flex-direction: column;
-  gap: v.$space-sm;
+  gap: 10px;
+
+  // Forms read best at a comfortable measure, even on wide screens.
+  @include v.desktop {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+  }
 }
 
 .topBar {
@@ -13,12 +20,21 @@
 }
 
 .ghost {
-  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px 0 8px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: v.$radius-sm;
-  color: var(--text);
-  font-size: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+
+  &:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 
 .topTitle {
@@ -52,7 +68,15 @@
 }
 
 .metaLabel {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+
+  svg {
+    color: var(--text-faint);
+  }
 }
 
 .metaTotal {
@@ -64,7 +88,10 @@
 
   strong {
     margin-left: auto;
-    font-size: 18px;
+
+    @include v.mono;
+
+    font-size: 15px;
     color: var(--primary);
   }
 }
@@ -87,7 +114,7 @@
   flex-direction: column;
   gap: 6px;
   padding: v.$space-md;
-  border-left: 4px solid var(--accent);
+  border-left: 3px solid var(--accent);
 }
 
 .exHead {
@@ -104,14 +131,15 @@
 }
 
 .exName {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .exStat {
+  @include v.mono;
+
   font-size: 12px;
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .exMuscle {
@@ -124,6 +152,8 @@
 }
 
 .exRemove {
+  display: grid;
+  place-items: center;
   width: 28px;
   height: 28px;
   background: transparent;
@@ -192,6 +222,8 @@
 }
 
 .check {
+  display: grid;
+  place-items: center;
   width: 32px;
   height: 32px;
   background: var(--surface-2);
@@ -208,6 +240,8 @@
 }
 
 .setRemove {
+  display: grid;
+  place-items: center;
   width: 28px;
   height: 28px;
   background: transparent;
@@ -243,16 +277,20 @@
 
 .save {
   margin-top: v.$space-sm;
-  padding: 14px;
+  height: 40px;
   background: var(--primary);
   color: var(--primary-contrast);
   border: none;
-  border-radius: v.$radius-md;
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: v.$radius-sm;
+  font-size: 14px;
+  font-weight: 500;
 
   &:disabled {
     opacity: 0.5;
+  }
+
+  &:hover:enabled {
+    filter: brightness(1.1);
   }
 }
 
@@ -268,10 +306,14 @@
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow);
   z-index: 20;
 
   @include v.tablet {
     bottom: 24px;
+  }
+
+  @include v.desktop {
+    display: none;
   }
 }

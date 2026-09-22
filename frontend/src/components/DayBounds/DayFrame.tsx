@@ -1,3 +1,5 @@
+import { AlertTriangle, BedDouble, Moon, MoonStar, Sunrise } from 'lucide-react';
+
 import { formatMinutes } from '@/utils/time';
 
 import styles from './DayFrame.module.scss';
@@ -9,8 +11,12 @@ type Bounds = ReturnType<typeof useDayBounds>;
 export function DayFrame({ bounds }: { bounds: Bounds }) {
   return (
     <section className={styles.frame} aria-label="Подъём и отбой">
+      <h2 className={styles.title}>Сон и режим</h2>
+
       <div className={styles.field}>
-        <span className={styles.label}>🌙 Лёг вчера</span>
+        <span className={styles.label}>
+          <MoonStar size={15} aria-hidden="true" /> Лёг вчера
+        </span>
         <input
           type="time"
           value={bounds.prevSleep}
@@ -20,7 +26,9 @@ export function DayFrame({ bounds }: { bounds: Bounds }) {
       </div>
 
       <div className={`${styles.field} ${bounds.wakeError ? styles.invalid : ''}`}>
-        <span className={styles.label}>🌅 Подъём</span>
+        <span className={styles.label}>
+          <Sunrise size={15} aria-hidden="true" /> Подъём
+        </span>
         <input
           type="time"
           value={bounds.wake}
@@ -29,29 +37,29 @@ export function DayFrame({ bounds }: { bounds: Bounds }) {
         />
       </div>
 
-      {bounds.sleepMinutes > 0 && (
-        <div className={styles.sleep}>
-          <span className={styles.label}>💤 Сон</span>
-          <strong>{formatMinutes(bounds.sleepMinutes)}</strong>
-        </div>
-      )}
-
       {bounds.wakeError && (
         <p className={styles.error} role="alert">
-          ⚠ {bounds.wakeError}
+          <AlertTriangle size={13} aria-hidden="true" /> {bounds.wakeError}
         </p>
       )}
 
-      <div className={styles.divider} />
-
       <div className={styles.field}>
-        <span className={styles.label}>🌙 Отбой сегодня</span>
+        <span className={styles.label}>
+          <Moon size={15} aria-hidden="true" /> Отбой сегодня
+        </span>
         <input
           type="time"
           value={bounds.sleep}
           onChange={(e) => bounds.setSleep(e.target.value)}
           aria-label="Время отбоя сегодня"
         />
+      </div>
+
+      <div className={styles.sleep}>
+        <span className={styles.label}>
+          <BedDouble size={15} aria-hidden="true" /> Сон
+        </span>
+        <strong>{bounds.sleepMinutes > 0 ? formatMinutes(bounds.sleepMinutes) : '—'}</strong>
       </div>
     </section>
   );

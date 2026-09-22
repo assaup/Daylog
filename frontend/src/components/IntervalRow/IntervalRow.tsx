@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
+import { AlertTriangle, X } from 'lucide-react';
 
 import type { Category, EntryDraft } from '@/types';
+import { diffMinutes, formatMinutes } from '@/utils/time';
 
 import styles from './IntervalRow.module.scss';
 
@@ -15,7 +17,8 @@ interface Props {
 
 export function IntervalRow({ index, draft, categories, error, onChange, onRemove }: Props) {
   const activeCat = categories.find((c) => c.id === draft.category);
-  const accent = error ? 'var(--danger)' : (activeCat?.color ?? 'var(--border)');
+  const accent = error ? 'var(--danger)' : (activeCat?.color ?? 'var(--border-strong)');
+  const minutes = diffMinutes(draft.start_time, draft.end_time);
 
   return (
     <div
@@ -71,18 +74,22 @@ export function IntervalRow({ index, draft, categories, error, onChange, onRemov
         aria-label={`Заметка интервала ${index + 1}`}
       />
 
+      <span className={styles.duration} aria-hidden="true">
+        {minutes > 0 ? formatMinutes(minutes) : ''}
+      </span>
+
       <button
         type="button"
         className={styles.remove}
         onClick={() => onRemove(index)}
         aria-label={`Удалить интервал ${index + 1}`}
       >
-        ✕
+        <X size={15} />
       </button>
 
       {error && (
         <p className={styles.errorText} role="alert">
-          ⚠ {error}
+          <AlertTriangle size={13} aria-hidden="true" /> {error}
         </p>
       )}
     </div>
