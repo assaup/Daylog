@@ -9,6 +9,7 @@
   justify-content: center;
   padding: v.$space-md;
   background: rgb(0 0 0 / 55%);
+  backdrop-filter: blur(4px);
 }
 
 .modal {
@@ -21,6 +22,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: v.$radius-lg;
+  box-shadow: var(--shadow);
 }
 
 .title {

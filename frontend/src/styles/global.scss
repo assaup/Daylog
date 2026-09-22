@@ -1,38 +1,59 @@
-// Light theme (default).
+// Linear-style tokens. Dark is the primary theme, light is its quiet twin.
 :root,
-:root[data-theme='light'] {
-  --bg: #f1f5f9;
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --primary: #4f8cff;
-  --primary-contrast: #ffffff;
-  --danger: #ef4444;
-  --productive: #16a34a;
-  --neutral: #94a3b8;
-  --waste: #ef4444;
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #08090a;
+  --surface: #101113;
+  --surface-2: #17181b;
+  --surface-3: #1f2024;
+  --hover: rgb(255 255 255 / 4%);
+  --border: #22242a;
+  --border-strong: #2e3037;
+  --text: #f2f3f5;
+  --text-muted: #8a8f98;
+  --text-faint: #5c616b;
+  --primary: #7c73ff;
+  --primary-soft: rgb(124 115 255 / 14%);
+  --primary-contrast: #fff;
+  --danger: #f2555a;
+  --productive: #4cc38a;
+  --neutral: #8a8f98;
+  --waste: #f2555a;
+  --shadow: 0 8px 30px rgb(0 0 0 / 45%);
+  --ring: 0 0 0 3px rgb(124 115 255 / 28%);
 }
 
-// Dark theme.
-:root[data-theme='dark'] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #172033;
-  --border: #334155;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --primary: #4f8cff;
-  --primary-contrast: #ffffff;
-  --danger: #f87171;
-  --productive: #3ddc97;
-  --neutral: #94a3b8;
-  --waste: #ff4d6d;
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f7f7f8;
+  --surface: #fff;
+  --surface-2: #f3f3f5;
+  --surface-3: #ebebee;
+  --hover: rgb(0 0 0 / 3.5%);
+  --border: #e6e6ea;
+  --border-strong: #d6d6dc;
+  --text: #0e0f11;
+  --text-muted: #6b6f76;
+  --text-faint: #9a9ea6;
+  --primary: #5e56f0;
+  --primary-soft: rgb(94 86 240 / 10%);
+  --primary-contrast: #fff;
+  --danger: #e5484d;
+  --productive: #1f9d63;
+  --neutral: #8b8f98;
+  --waste: #e5484d;
+  --shadow: 0 8px 30px rgb(15 15 20 / 10%);
+  --ring: 0 0 0 3px rgb(94 86 240 / 22%);
 }
 
 * {
   box-sizing: border-box;
+
+  // Thin, unobtrusive scrollbars on desktop.
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 html,
@@ -45,8 +66,32 @@ body,
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background: var(--primary-soft);
+}
+
+input[type='date'],
+input[type='time'] {
+  font-variant-numeric: tabular-nums;
 }
 
 button {
@@ -59,6 +104,26 @@ select,
 button {
   font: inherit;
   color: inherit;
+}
+
+// Consistent form controls: quiet surface, crisp focus ring.
+input:not([type='checkbox'], [type='radio'], [type='color'], [type='range']),
+select,
+textarea {
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s,
+    background 0.12s;
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: var(--ring);
+  }
 }
 
 a {

@@ -1,15 +1,184 @@
 @use '../../styles/variables' as v;
 
+// Mobile: stacked header + bottom tabbar. Desktop: fixed sidebar + fluid content.
 .shell {
+  min-height: 100vh;
+
+  @include v.desktop {
+    display: grid;
+    grid-template-columns: v.$sidebar-w minmax(0, 1fr);
+  }
+}
+
+// --- Sidebar (desktop only) ---
+.sidebar {
+  display: none;
+
+  @include v.desktop {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-lg;
+    height: 100vh;
+    padding: v.$space-md 12px;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+  }
+}
+
+.brand,
+.mobileBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.brand {
+  padding: 6px 8px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  background: var(--primary);
+  border-radius: 7px;
+  color: var(--primary-contrast);
+}
+
+.sideNav {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  max-width: 720px;
-  margin: 0 auto;
+  gap: 2px;
+}
 
-  @include v.tablet {
-    max-width: 900px;
+.sideLabel {
+  @include v.eyebrow;
+
+  padding: 0 8px 6px;
+  color: var(--text-faint);
+}
+
+.sideLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    background 0.12s,
+    color 0.12s;
+
+  svg {
+    flex: 0 0 auto;
   }
+
+  &:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
+}
+
+.sideLinkActive {
+  background: var(--surface-2);
+  color: var(--text);
+
+  svg {
+    color: var(--primary);
+  }
+}
+
+.kbd {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: v.$font-mono;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.sideFooter {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  margin-top: auto;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px 4px;
+  border-top: 1px solid var(--border);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: var(--primary-soft);
+  border-radius: 50%;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profileName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.iconBtn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: v.$radius-sm;
+  color: var(--text-muted);
+  transition:
+    background 0.12s,
+    color 0.12s;
+
+  &:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
+}
+
+// --- Content column ---
+.content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
 }
 
 .header {
@@ -18,101 +187,97 @@
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: v.$space-md;
   height: v.$header-h;
   padding: 0 v.$space-md;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-}
 
-.brand {
-  font-weight: 700;
-}
-
-// Desktop nav in the header (hidden on mobile, where the bottom tabbar is used).
-.headerNav {
-  display: none;
-
-  @include v.tablet {
-    display: flex;
-    gap: v.$space-xs;
-    margin: 0 auto;
+  @include v.desktop {
+    padding: 0 v.$space-xl;
   }
 }
 
-.headerLink {
-  padding: 8px 14px;
-  border-radius: v.$radius-sm;
-  text-decoration: none;
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 14px;
-
-  &:hover {
-    background: var(--surface-2);
-  }
-}
-
-.headerLinkActive {
-  background: var(--primary);
-  color: var(--primary-contrast);
-}
-
-.username {
-  @media (max-width: 400px) {
+.mobileBrand {
+  @include v.desktop {
     display: none;
   }
 }
 
-.user {
+.pageTitle {
+  display: none;
+
+  @include v.desktop {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.pageHint {
+  color: var(--text-faint);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.today {
+  display: none;
+
+  @include v.desktop {
+    display: block;
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-transform: capitalize;
+  }
+}
+
+.mobileActions {
   display: flex;
-  align-items: center;
-  gap: v.$space-sm;
-  font-size: 14px;
-  color: var(--text-muted);
-}
+  gap: 4px;
+  margin-left: auto;
 
-.logout {
-  padding: 6px 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: v.$radius-sm;
-  color: var(--text);
-}
-
-.theme {
-  width: 34px;
-  height: 34px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: v.$radius-sm;
-  font-size: 16px;
-  line-height: 1;
+  @include v.desktop {
+    display: none;
+  }
 }
 
 .main {
   flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   padding: v.$space-md;
   padding-bottom: 96px; // room for the fixed tabbar
 
-  @include v.tablet {
-    padding-bottom: v.$space-md; // no bottom tabbar on desktop
+  @include v.desktop {
+    padding: 28px v.$space-xl 48px;
   }
 }
 
+// --- Mobile bottom tabbar ---
 .tabbar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 10;
   display: flex;
-  max-width: 720px;
-  margin: 0 auto;
-  background: var(--surface);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
 
-  @include v.tablet {
-    display: none; // desktop uses the header nav instead
+  @include v.desktop {
+    display: none;
   }
 }
 
@@ -121,22 +286,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px 0;
+  gap: 3px;
+  padding: 10px 0 8px;
   text-decoration: none;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: var(--text-faint);
 }
 
 .tabActive {
   color: var(--primary);
-  font-weight: 600;
-}
-
-.tabIcon {
-  font-size: 20px;
 }
 
 .tabLabel {
   font-size: 11px;
+  font-weight: 500;
 }

@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import type { CategoryPreset } from '@/types';
 
 import styles from './PresetPickerModal.module.scss';
@@ -15,7 +16,7 @@ export function PresetPickerModal({ presets, onAdd, onClose }: Props) {
         <div className={styles.head}>
           <h2 className={styles.title}>Готовые категории</h2>
           <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
-            ✕
+            <X size={16} />
           </button>
         </div>
 
@@ -24,12 +25,7 @@ export function PresetPickerModal({ presets, onAdd, onClose }: Props) {
         ) : (
           <div className={styles.grid}>
             {presets.map((p) => (
-              <button
-                key={p.name}
-                type="button"
-                className={styles.chip}
-                onClick={() => onAdd(p)}
-              >
+              <button key={p.name} type="button" className={styles.chip} onClick={() => onAdd(p)}>
                 <span className={styles.chipIcon}>{p.icon}</span>
                 {p.name}
               </button>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '@/store/authStore';
 
+import { AuthShell } from './AuthShell';
 import styles from './auth.module.scss';
 
 export function RegisterPage() {
@@ -29,9 +30,12 @@ export function RegisterPage() {
   };
 
   return (
-    <div className={styles.wrap}>
+    <AuthShell>
       <form className={styles.card} onSubmit={onSubmit}>
-        <h1 className={styles.title}>Регистрация</h1>
+        <div>
+          <h1 className={styles.title}>Создать аккаунт</h1>
+          <p className={styles.subtitle}>Пара секунд — и можно записывать первый день</p>
+        </div>
 
         {error && (
           <p className={styles.error} role="alert">
@@ -78,6 +82,6 @@ export function RegisterPage() {
           Уже есть аккаунт? <Link to="/login">Войти</Link>
         </p>
       </form>
-    </div>
+    </AuthShell>
   );
 }

@@ -1,20 +1,33 @@
 // Spacing / radius / breakpoints used across modules via @use.
-$radius-sm: 8px;
-$radius-md: 12px;
-$radius-lg: 18px;
-
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 14px;
 $space-xs: 4px;
 $space-sm: 8px;
 $space-md: 16px;
 $space-lg: 24px;
-
+$space-xl: 32px;
 $bp-tablet: 768px;
 $bp-desktop: 1024px;
-
+$bp-wide: 1280px;
 $header-h: 60px;
+$sidebar-w: 240px;
+$font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', menlo, monospace;
 
 @mixin tablet {
   @media (min-width: $bp-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $bp-desktop) {
+    @content;
+  }
+}
+
+@mixin wide {
+  @media (min-width: $bp-wide) {
     @content;
   }
 }
@@ -23,4 +36,21 @@ $header-h: 60px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: $radius-md;
+}
+
+// Small uppercase section label (Linear-style).
+@mixin eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+// Numbers that should line up and read as data.
+@mixin mono {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }

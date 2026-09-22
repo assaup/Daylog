@@ -1,9 +1,41 @@
 @use '../../styles/variables' as v;
 
+// Desktop: sticky "new category" column + kind groups side by side.
 .page {
   display: flex;
   flex-direction: column;
   gap: v.$space-md;
+
+  @include v.desktop {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    align-items: start;
+    gap: v.$space-lg;
+  }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+
+  @include v.desktop {
+    position: sticky;
+    top: calc(#{v.$header-h} + #{v.$space-lg});
+  }
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-lg;
+
+  @include v.wide {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    align-items: start;
+    gap: v.$space-md;
+  }
 }
 
 .form {
@@ -11,18 +43,20 @@
 
   display: flex;
   flex-direction: column;
-  gap: v.$space-sm;
-  padding: v.$space-md;
+  gap: 12px;
+  padding: 18px;
 }
 
 .h2 {
-  margin: 0;
-  font-size: 16px;
+  @include v.eyebrow;
 }
 
 .error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--danger);
 }
 
@@ -33,12 +67,23 @@
 
 // Button that opens the ready-made categories picker.
 .presetsBtn {
-  padding: 12px;
-  background: var(--surface);
-  border: 1px dashed var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  background: transparent;
+  border: 1px dashed var(--border-strong);
   border-radius: v.$radius-md;
-  color: var(--text);
-  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
 }
 
 // Grouped category sections.
@@ -49,12 +94,38 @@
 }
 
 .groupTitle {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  @include v.eyebrow;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.groupCount {
+  @include v.mono;
+
+  margin-left: auto;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.kindDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.kind_productive {
+  background: var(--productive);
+}
+
+.kind_neutral {
+  background: var(--neutral);
+}
+
+.kind_waste {
+  background: var(--waste);
 }
 
 .field {
@@ -68,7 +139,7 @@
 }
 
 .fieldLabel {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -84,7 +155,8 @@
 .icon,
 .name,
 .kind {
-  padding: 10px;
+  height: 36px;
+  padding: 0 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: v.$radius-sm;
@@ -92,8 +164,8 @@
 }
 
 .color {
-  width: 48px;
-  height: 42px;
+  width: 44px;
+  height: 36px;
   padding: 2px;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -105,41 +177,54 @@
 }
 
 .add {
-  padding: 10px 16px;
+  height: 36px;
+  padding: 0 16px;
   background: var(--primary);
   color: var(--primary-contrast);
   border: none;
   border-radius: v.$radius-sm;
-  font-weight: 600;
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
 }
 
+// One bordered list per group, rows separated by hairlines.
 .list {
+  @include v.card;
+
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-sm;
+  overflow: hidden;
 }
 
 .item {
-  @include v.card;
-
   display: flex;
   align-items: center;
-  gap: v.$space-sm;
-  padding: 10px v.$space-md;
+  gap: 10px;
+  height: 44px;
+  padding: 0 8px 0 14px;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+
+  &:hover {
+    background: var(--hover);
+  }
 }
 
 .dot {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex: 0 0 auto;
 }
 
 .itemIcon {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .itemName {
@@ -157,17 +242,28 @@
 }
 
 .iconBtn {
-  width: 34px;
-  height: 34px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
   flex: 0 0 auto;
   background: transparent;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: v.$radius-sm;
-  font-size: 15px;
-  line-height: 1;
+  color: var(--text-faint);
 
   &:hover {
-    border-color: var(--primary);
+    background: var(--surface-3);
+    color: var(--text);
+  }
+
+  // Revealed on row hover with a mouse; always visible on touch.
+  @media (hover: hover) {
+    opacity: 0;
+
+    &:focus-visible {
+      opacity: 1;
+    }
   }
 }
 
@@ -175,4 +271,8 @@
   margin: 0;
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.item:hover .iconBtn {
+  opacity: 1;
 }

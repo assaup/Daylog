@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '@/store/authStore';
 
+import { AuthShell } from './AuthShell';
 import styles from './auth.module.scss';
 
 export function LoginPage() {
@@ -28,9 +29,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className={styles.wrap}>
+    <AuthShell>
       <form className={styles.card} onSubmit={onSubmit}>
-        <h1 className={styles.title}>Вход</h1>
+        <div>
+          <h1 className={styles.title}>С возвращением</h1>
+          <p className={styles.subtitle}>Войди, чтобы продолжить вести день</p>
+        </div>
 
         {error && (
           <p className={styles.error} role="alert">
@@ -67,6 +71,6 @@ export function LoginPage() {
           Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
         </p>
       </form>
-    </div>
+    </AuthShell>
   );
 }

@@ -7,8 +7,8 @@ const STORAGE_KEY = 'tt_theme';
 function initialTheme(): Theme {
   const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
   if (saved === 'light' || saved === 'dark') return saved;
-  // Fall back to the OS preference on first run.
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  // Dark is the signature look; light is opt-in.
+  return 'dark';
 }
 
 function apply(theme: Theme) {
@@ -22,7 +22,7 @@ interface ThemeState {
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
-  theme: 'light',
+  theme: 'dark',
   init: () => {
     const theme = initialTheme();
     apply(theme);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Dumbbell, Plus, Trash2 } from 'lucide-react';
 
 import { useDeleteWorkout, useWorkouts } from '@/api/hooks';
 import type { Workout } from '@/types';
@@ -39,12 +40,7 @@ export function WorkoutsPage() {
   const deleteWorkout = useDeleteWorkout();
 
   if (screen.mode === 'edit') {
-    return (
-      <WorkoutEditor
-        initial={screen.workout}
-        onDone={() => setScreen({ mode: 'list' })}
-      />
-    );
+    return <WorkoutEditor initial={screen.workout} onDone={() => setScreen({ mode: 'list' })} />;
   }
 
   if (screen.mode === 'view') {
@@ -60,13 +56,14 @@ export function WorkoutsPage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>🏋️ Тренировки</h1>
+        <h1 className={styles.title}>Тренировки</h1>
+        <span className={styles.count}>{workouts.length}</span>
         <button
           type="button"
           className={styles.newBtn}
           onClick={() => setScreen({ mode: 'edit', workout: null })}
         >
-          + Новая
+          <Plus size={15} aria-hidden="true" /> Новая
         </button>
       </div>
 
@@ -74,7 +71,7 @@ export function WorkoutsPage() {
         <p className={styles.muted}>Загрузка…</p>
       ) : workouts.length === 0 ? (
         <div className={styles.empty}>
-          <span className={styles.emptyIcon}>💪</span>
+          <Dumbbell size={32} className={styles.emptyIcon} aria-hidden="true" />
           <p>Пока нет ни одной тренировки.</p>
           <button
             type="button"
@@ -100,9 +97,7 @@ export function WorkoutsPage() {
                   <div className={styles.cardTop}>
                     <span className={styles.cardDate}>{formatDate(w.date)}</span>
                     {w.duration_minutes != null && (
-                      <span className={styles.cardDur}>
-                        {formatMinutes(w.duration_minutes)}
-                      </span>
+                      <span className={styles.cardDur}>{formatMinutes(w.duration_minutes)}</span>
                     )}
                   </div>
 
@@ -145,7 +140,7 @@ export function WorkoutsPage() {
                   onClick={() => setDeleteTarget(w)}
                   aria-label="Удалить тренировку"
                 >
-                  🗑
+                  <Trash2 size={15} />
                 </button>
               </li>
             );

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { CalendarDays, Check, ChevronLeft, Play, Square, Timer, X } from 'lucide-react';
 
 import { useCreateWorkout, useUpdateWorkout } from '@/api/hooks';
 import type { Exercise, Workout, WorkoutInput } from '@/types';
@@ -43,8 +44,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const secToMin = (s: number | null) => (s ? String(Math.floor(s / 60)) : '');
 const secToSec = (s: number | null) => (s ? String(s % 60) : '');
-const toSeconds = (min: string, sec: string) =>
-  (Number(min) || 0) * 60 + (Number(sec) || 0);
+const toSeconds = (min: string, sec: string) => (Number(min) || 0) * 60 + (Number(sec) || 0);
 
 function fromWorkout(w: Workout): ExRow[] {
   return w.exercises.map((we) => {
@@ -53,8 +53,7 @@ function fromWorkout(w: Workout): ExRow[] {
       _uid: nextUid(),
       exercise: we.exercise,
       detail,
-      withWeight:
-        detail.tracking === 'bodyweight' && we.sets.some((s) => s.weight != null),
+      withWeight: detail.tracking === 'bodyweight' && we.sets.some((s) => s.weight != null),
       sets: we.sets.map((s) => ({
         _uid: nextUid(),
         reps: s.reps != null ? String(s.reps) : '',
@@ -70,8 +69,7 @@ function fromWorkout(w: Workout): ExRow[] {
 
 /** Does this row show a weight input? Always for weight_reps, opt-in for bodyweight. */
 const showsWeight = (ex: ExRow) =>
-  ex.detail.tracking === 'weight_reps' ||
-  (ex.detail.tracking === 'bodyweight' && ex.withWeight);
+  ex.detail.tracking === 'weight_reps' || (ex.detail.tracking === 'bodyweight' && ex.withWeight);
 
 interface Props {
   initial: Workout | null;
@@ -105,13 +103,10 @@ export function WorkoutEditor({ initial, onDone }: Props) {
     setPickerOpen(false);
   };
 
-  const removeExercise = (uid: string) =>
-    setRows((prev) => prev.filter((r) => r._uid !== uid));
+  const removeExercise = (uid: string) => setRows((prev) => prev.filter((r) => r._uid !== uid));
 
   const toggleWeight = (uid: string) =>
-    setRows((prev) =>
-      prev.map((r) => (r._uid === uid ? { ...r, withWeight: !r.withWeight } : r)),
-    );
+    setRows((prev) => prev.map((r) => (r._uid === uid ? { ...r, withWeight: !r.withWeight } : r)));
 
   const addSet = (exUid: string) =>
     setRows((prev) =>
@@ -138,8 +133,7 @@ export function WorkoutEditor({ initial, onDone }: Props) {
       ),
     );
 
-  const jumpToAdd = () =>
-    addRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const jumpToAdd = () => addRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   const save = () => {
     const payload: WorkoutInput = {
@@ -164,9 +158,7 @@ export function WorkoutEditor({ initial, onDone }: Props) {
               reps: trackingNeedsReps(t) ? Number(s.reps) : null,
               weight: weightOn && s.weight ? s.weight : null,
               duration_seconds:
-                t === 'duration' || t === 'distance'
-                  ? toSeconds(s.durMin, s.durSec) || null
-                  : null,
+                t === 'duration' || t === 'distance' ? toSeconds(s.durMin, s.durSec) || null : null,
               distance_km: t === 'distance' && s.distance ? s.distance : null,
               done: s.done,
             })),
@@ -183,16 +175,16 @@ export function WorkoutEditor({ initial, onDone }: Props) {
     <div className={styles.editor}>
       <div className={styles.topBar}>
         <button type="button" className={styles.ghost} onClick={onDone}>
-          ← К списку
+          <ChevronLeft size={15} aria-hidden="true" /> К списку
         </button>
-        <span className={styles.topTitle}>
-          {initial ? 'Тренировка' : 'Новая тренировка'}
-        </span>
+        <span className={styles.topTitle}>{initial ? 'Тренировка' : 'Новая тренировка'}</span>
       </div>
 
       <section className={styles.metaCard} aria-label="Дата и время тренировки">
         <div className={styles.metaRow}>
-          <span className={styles.metaLabel}>📅 Дата</span>
+          <span className={styles.metaLabel}>
+            <CalendarDays size={15} aria-hidden="true" /> Дата
+          </span>
           <input
             type="date"
             value={date}
@@ -203,7 +195,9 @@ export function WorkoutEditor({ initial, onDone }: Props) {
         </div>
 
         <div className={styles.metaRow}>
-          <span className={styles.metaLabel}>🏁 Начало</span>
+          <span className={styles.metaLabel}>
+            <Play size={15} aria-hidden="true" /> Начало
+          </span>
           <input
             type="time"
             value={start}
@@ -213,7 +207,9 @@ export function WorkoutEditor({ initial, onDone }: Props) {
         </div>
 
         <div className={styles.metaRow}>
-          <span className={styles.metaLabel}>🛑 Конец</span>
+          <span className={styles.metaLabel}>
+            <Square size={15} aria-hidden="true" /> Конец
+          </span>
           <input
             type="time"
             value={end}
@@ -224,7 +220,9 @@ export function WorkoutEditor({ initial, onDone }: Props) {
 
         {start && end && (
           <div className={styles.metaTotal}>
-            <span className={styles.metaLabel}>⏱️ Длительность</span>
+            <span className={styles.metaLabel}>
+              <Timer size={15} aria-hidden="true" /> Длительность
+            </span>
             <strong>{formatMinutes(diffMinutes(start, end))}</strong>
           </div>
         )}
@@ -329,10 +327,7 @@ function ExerciseCard({
   const stat = useMemo(() => exerciseStat(ex), [ex]);
 
   return (
-    <section
-      className={styles.exCard}
-      style={{ '--accent': accent } as React.CSSProperties}
-    >
+    <section className={styles.exCard} style={{ '--accent': accent } as React.CSSProperties}>
       <div className={styles.exHead}>
         <div className={styles.exTitle}>
           <span className={styles.exName}>{ex.detail?.name}</span>
@@ -345,7 +340,7 @@ function ExerciseCard({
           onClick={onRemove}
           aria-label="Убрать упражнение"
         >
-          ✕
+          <X size={15} />
         </button>
       </div>
 
@@ -370,7 +365,7 @@ function ExerciseCard({
             {weighted && <span>Вес, кг</span>}
           </>
         )}
-        <span aria-hidden="true">✓</span>
+        <Check size={14} aria-hidden="true" />
         <span />
       </div>
 
@@ -382,9 +377,7 @@ function ExerciseCard({
         >
           <span className={styles.setNum}>{i + 1}</span>
 
-          {layout === 'duration' && (
-            <TimeCell s={s} onPatch={(p) => onPatchSet(s._uid, p)} />
-          )}
+          {layout === 'duration' && <TimeCell s={s} onPatch={(p) => onPatchSet(s._uid, p)} />}
 
           {layout === 'distance' && (
             <>
@@ -435,7 +428,7 @@ function ExerciseCard({
             aria-label={`Подход ${i + 1} выполнен`}
             aria-pressed={s.done}
           >
-            {s.done ? '✓' : ''}
+            {s.done ? <Check size={14} /> : null}
           </button>
 
           <button
@@ -444,7 +437,7 @@ function ExerciseCard({
             onClick={() => onRemoveSet(s._uid)}
             aria-label={`Удалить подход ${i + 1}`}
           >
-            ✕
+            <X size={15} />
           </button>
         </div>
       ))}
@@ -456,13 +449,7 @@ function ExerciseCard({
   );
 }
 
-function TimeCell({
-  s,
-  onPatch,
-}: {
-  s: SetRow;
-  onPatch: (patch: Partial<SetRow>) => void;
-}) {
+function TimeCell({ s, onPatch }: { s: SetRow; onPatch: (patch: Partial<SetRow>) => void }) {
   return (
     <span className={styles.timeCell}>
       <input

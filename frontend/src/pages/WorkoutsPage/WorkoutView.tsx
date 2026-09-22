@@ -1,3 +1,4 @@
+import { CalendarDays, Check, ChevronLeft, Clock, Pencil, Timer } from 'lucide-react';
 import type { WorkoutSet as TSet, Workout, WorkoutExercise } from '@/types';
 import { formatMinutes } from '@/utils/time';
 import { formatDuration, regionColor } from '@/utils/workout';
@@ -51,21 +52,25 @@ export function WorkoutView({ workout, onEdit, onBack }: Props) {
     <div className={styles.page}>
       <div className={styles.topBar}>
         <button type="button" className={styles.ghost} onClick={onBack}>
-          ← К списку
+          <ChevronLeft size={15} aria-hidden="true" /> К списку
         </button>
         <button type="button" className={styles.editBtn} onClick={onEdit}>
-          ✏️ Изменить
+          <Pencil size={14} aria-hidden="true" /> Изменить
         </button>
       </div>
 
       <section className={styles.metaCard}>
         <div className={styles.metaRow}>
-          <span className={styles.metaLabel}>📅 Дата</span>
+          <span className={styles.metaLabel}>
+            <CalendarDays size={15} aria-hidden="true" /> Дата
+          </span>
           <span className={styles.metaValue}>{formatDate(workout.date)}</span>
         </div>
         {workout.start_time && workout.end_time && (
           <div className={styles.metaRow}>
-            <span className={styles.metaLabel}>🕐 Время</span>
+            <span className={styles.metaLabel}>
+              <Clock size={15} aria-hidden="true" /> Время
+            </span>
             <span className={styles.metaValue}>
               {workout.start_time.slice(0, 5)}–{workout.end_time.slice(0, 5)}
             </span>
@@ -73,7 +78,9 @@ export function WorkoutView({ workout, onEdit, onBack }: Props) {
         )}
         {workout.duration_minutes != null && (
           <div className={`${styles.metaRow} ${styles.metaTotal}`}>
-            <span className={styles.metaLabel}>⏱️ Длительность</span>
+            <span className={styles.metaLabel}>
+              <Timer size={15} aria-hidden="true" /> Длительность
+            </span>
             <strong>{formatMinutes(workout.duration_minutes)}</strong>
           </div>
         )}
@@ -106,7 +113,7 @@ export function WorkoutView({ workout, onEdit, onBack }: Props) {
                     <span className={styles.setVal}>{setLabel(s, tracking)}</span>
                     {s.done && (
                       <span className={styles.setDone} aria-label="Выполнено">
-                        ✓
+                        <Check size={14} />
                       </span>
                     )}
                   </li>
